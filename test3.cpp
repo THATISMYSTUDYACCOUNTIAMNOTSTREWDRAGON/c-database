@@ -26,6 +26,12 @@ enum FuildType {
   STRING
 };
 
+struct MenuItem {
+  const int id;
+  const char *name;
+  const function<void()> func;
+};
+
 bool isInt(char *string) {
   for (int i = 0; i < strlen(string); i++) {
     if(!(47 < string[i] && string[i] < 58)) return false;
@@ -255,14 +261,11 @@ void testGlobalStorage() {
   cout << "Test pessed" << endl;
 }
 
-void generateMenu() {
-  addMenuItem(createNewMenuItem("show all students", printAll));
-  addMenuItem(createNewMenuItem("edit student", edit));
-  addMenuItem(createNewMenuItem("delete student", deleteOne));
-  addMenuItem(createNewMenuItem("add new student", appendStudent));
-  addMenuItem(createNewMenuItem("find students by marks", printByQuery));
-  addMenuItem(createNewMenuItem("sort students by fuild", bubble_sort));
-}
+struct Menu {
+  int storageSize;
+  MenuItem *storage;
+};
+
 
 int main() {
   testStudent();
