@@ -269,6 +269,7 @@ struct Menu {
 
 int main() {
   testStudent();
+  testGlobalStorage();
 
   return 0;
 }
