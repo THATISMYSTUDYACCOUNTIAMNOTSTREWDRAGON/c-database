@@ -21,10 +21,7 @@ enum Fuild {
   Mark3,
 };
 
-enum FuildType {
-  INT,
-  STRING
-};
+enum FuildType { INT, STRING };
 
 struct MenuItem {
   const int id;
@@ -34,7 +31,8 @@ struct MenuItem {
 
 bool isInt(char *string) {
   for (int i = 0; i < strlen(string); i++) {
-    if(!(47 < string[i] && string[i] < 58)) return false;
+    if (!(47 < string[i] && string[i] < 58))
+      return false;
   }
   return true;
 }
@@ -42,9 +40,9 @@ bool isInt(char *string) {
 bool checkType(char *string, FuildType type) {
   bool isCorect = true;
   switch (type) {
-    case FuildType::INT:
-      isCorect = isInt(string);
-      break;
+  case FuildType::INT:
+    isCorect = isInt(string);
+    break;
   }
   return isCorect;
 }
@@ -55,7 +53,6 @@ FuildType defineFuildType(char *string) {
   }
   return FuildType::STRING;
 }
-
 
 inline const char *getFuildName(Fuild v) {
   switch (v) {
@@ -129,9 +126,7 @@ void appendStudentFuild(Student &student, KeyString keyvalue) {
   student.storageSize = newStorageSize;
 }
 
-void fillStudentWithFile(Student &student) {
-
-}
+void fillStudentWithFile(Student &student) {}
 
 void fillStudentWithKeybord(Student &student) {
   for (int i = Fuild::Name; i < Fuild::Mark3; ++i) {
@@ -166,7 +161,7 @@ void appendStudent(Storage &storage, Student student) {
 
   newStorage[storage.storageSize] = student;
 
-  delete[] student.storage;
+  delete[] storage.storage;
 
   storage.storage = newStorage;
 
@@ -190,33 +185,33 @@ Student testStudent() {
   student.storageSize = 0;
   student.storage = new KeyString[student.storageSize];
 
-  cout << "Appending only" << endl;
-  for (int j = 0; j < 10; j++) {
+  // cout << "Appending only" << endl;
+  for (int j = 0; j < 1; j++) {
     for (int i = Fuild::Name; i <= Fuild::Mark3; i++) {
       KeyString keyvalue;
 
+      cout << "Transition: " << (Fuild(i)) << endl;
       keyvalue.key = (Fuild)i;
-      char temp_str[100] = "100f";
       // char snum[5];
       //
       // sprintf(snum, "%d", i);
+      //
+      // FuildType type = defineFuildType((char*)getFuildName((Fuild)i));
+      //
+      // cout << "Name: " << getFuildName((Fuild)i) << endl;
+      // cout << "Type: " << type << endl;
+      //
+      // if (checkType(temp_str, type)) {
+      //   cout << "Type OK" << endl;
+      // } else {
+      //   cout << "Type BAD" << endl;
+      //   while (!checkType(temp_str, type)) {
+      //     cout << temp_str << endl;
+      //     strcpy(temp_str, "100");
+      //   }
+      // }
 
-      FuildType type = defineFuildType((char*)getFuildName((Fuild)i));
-
-      cout << "Name: " << getFuildName((Fuild)i) << endl;
-      cout << "Type: " << type << endl;
-
-      if (checkType(temp_str, type)) {
-        cout << "Type OK" << endl;
-      } else {
-        cout << "Type BAD" << endl;
-        while (!checkType(temp_str, type)) {
-          cout << temp_str << endl;
-          strcpy(temp_str, "100");
-        }
-      }
-
-      strcpy(keyvalue.value, temp_str);
+      strcpy(keyvalue.value, "1000f");
 
       cout << "Checking key value..." << endl;
       cout << "Key: " << keyvalue.key << endl;
@@ -226,11 +221,12 @@ Student testStudent() {
     }
   }
 
-  cout << "Print values of student" << endl;
+  // cout << "Print values of student" << endl;
   for (int i = 0; i < student.storageSize; i++) {
-    cout << "Size: "<< student.storageSize << endl;
-    cout << "Key: "<< student.storage[i].key << endl;
-    cout << "Value: "<< student.storage[i].value << endl;
+    cout << "Size: " << student.storageSize << endl;
+    cout << "Key: " << student.storage[i].key << endl;
+    cout << "Name: " << getFuildName((Fuild)student.storage[i].key) << endl;
+    cout << "Value: " << student.storage[i].value << endl;
   }
 
   cout << "Student fuild test OK" << endl;
@@ -244,21 +240,20 @@ void testGlobalStorage() {
   storage.storageSize = 0;
   storage.storage = new Student[storage.storageSize];
 
-  for (int i = 0; i<100; i++) {
+  for (int i = 0; i < 10; i++) {
     Student student = testStudent();
-    cout << "Size: " << student.storageSize << endl;
-    cout << "Value: " << student.storage[i].value << endl;
     appendStudent(storage, student);
   }
 
   cout << "T: Storage size: " << storage.storageSize << endl;
   for (int i = 0; i < storage.storageSize; i++) {
-    for (int j = 0; j< storage.storage[i].storageSize; j++) {
-      cout << "Value: " << storage.storage[i].storage[j].value << endl;
+    for (int j = 0; j < storage.storage[i].storageSize; j++) {
+      cout << "Key: " << storage.storage[i].storage[j].key << " " << getFuildName(storage.storage[i].storage[j].key) << " : " << storage.storage[i].storage[j].value << endl;
     }
+    cout << "================" << endl;
   }
 
-  cout << "Test pessed" << endl;
+  cout << "Test passed" << endl;
 }
 
 struct Menu {
@@ -266,9 +261,8 @@ struct Menu {
   MenuItem *storage;
 };
 
-
 int main() {
-  testStudent();
+  // testStudent();
   testGlobalStorage();
 
   return 0;
