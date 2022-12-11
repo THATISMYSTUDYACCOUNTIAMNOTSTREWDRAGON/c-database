@@ -1,4 +1,6 @@
 #include <cstring>
+#include<string.h>
+#include <iomanip>
 #include <functional>
 #include <iomanip>
 #include <iostream>
@@ -48,7 +50,9 @@ struct MenuItem {
   const char *name;
 
   function<Storage(Storage&)> globalStoreCallback;
+
   function<Student(function<Student(Student&)>)> studentStoreCallback;
+  // function<Student(function<Student(Student&)>)> studentsStoreCallback;
 };
 
 struct Menu {
@@ -233,25 +237,45 @@ void appendMenuItem(Menu &menu, MenuItem menuItem) {
 }
 
 Storage printAllStudents(Storage storage) {
-  Storage newStorage = storage;
 
-  if (newStorage.storageSize == 0) {
+  if (storage.storageSize == 0) {
     cout << "There is no data for now" << endl;
   }
 
-  for (int i = 0; i < newStorage.storageSize; i++) {
+  for (int i = 0; i < storage.storageSize; i++) {
     for (int j = Fuild::Name; j <= Fuild::Mark3; j++) {
-      cout << newStorage.storage[i].storage[j].stringValue << endl;
+      cout << storage.storage[i].storage[j].stringValue << endl;
     }
   }
 
-  return newStorage;
+  return storage;
+}
+
+Student updateStudent(Student student) {
+  Student newStudent = student;
+
+  char fuildName[100];
+
+  cout << "Input fuild name: "; cin >> fuildName;
+
+  for (int i = 0; i < newStudent.storageSize; i++) {
+    FuildInfo fuildInfo =  getFuildInfo((Fuild) newStudent.storage[i].key);
+    if (fuildInfo.name != getFuildInfo((Fuild) -2).name) { // this mean that fuild exists
+      if (fuildInfo.fuildType == FuildType::STRING) {
+        char newFuild[100];  
+        cout << "Input new value: "; cin >> newFuild;
+        strcpy(newStudent.storage[i].stringValue, newFuild);
+      }
+    }
+  }
+
+  return newStudent;
 }
 
 void fillMenu(Menu &menu) {
   appendMenuItem(menu, createMenuItem("Print all students", menu, printAllStudents));
   appendMenuItem(menu, createMenuItem("Append new student", menu, createNewStudent));
-  // appendMenuItem(menu, createMenuItem("Update student", menu, printAllStudents));
+  appendMenuItem(menu, createMenuItem("Update student", menu, updateStudent));
   // appendMenuItem(menu, createMenuItem("Delete student", menu, printAllStudents));
   // appendMenuItem(menu, createMenuItem("Load students from file", menu, printAllStudents));
   // appendMenuItem(menu, createMenuItem("Upload students to file", menu, printAllStudents));
