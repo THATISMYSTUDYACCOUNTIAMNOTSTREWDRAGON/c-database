@@ -29,6 +29,24 @@ struct MenuItem {
   const function<void()> func;
 };
 
+struct KeyString {
+  Fuild key;
+  FuildType fuildType;
+  char stringValue[100];
+  int intValue;
+};
+
+struct Student {
+  int storageSize;
+  KeyString *storage;
+};
+
+struct Storage {
+  int storageSize;
+  Student *storage;
+};
+
+
 bool isInt(char *string) {
   for (int i = 0; i < strlen(string); i++) {
     if (!(47 < string[i] && string[i] < 58))
@@ -85,27 +103,6 @@ inline const char *getFuildName(Fuild v) {
     return "[Unknown]";
   }
 }
-
-struct KeyInt {
-  Fuild key;
-  int value;
-};
-
-struct KeyString {
-  Fuild key;
-  char value[100];
-};
-
-struct Student {
-  int storageSize;
-  KeyString *storage;
-};
-
-struct Storage {
-  int storageSize;
-  Student *storage;
-};
-
 void appendStudentFuild(Student &student, KeyString keyvalue) {
   int newStorageSize = student.storageSize + 1;
 
@@ -134,7 +131,7 @@ void fillStudentWithKeybord(Student &student) {
 
     keyvalue.key = (Fuild)i;
     cout << "Input " << getFuildName((Fuild)i) << ": ";
-    cin >> keyvalue.value;
+    cin >> keyvalue.stringValue;
     appendStudentFuild(student, keyvalue);
   }
 }
@@ -211,11 +208,11 @@ Student testStudent() {
       //   }
       // }
 
-      strcpy(keyvalue.value, "1000f");
+      strcpy(keyvalue.stringValue, "1000f");
 
       cout << "Checking key value..." << endl;
       cout << "Key: " << keyvalue.key << endl;
-      cout << "Value: " << keyvalue.value << endl;
+      cout << "Value: " << keyvalue.stringValue << endl;
 
       appendStudentFuild(student, keyvalue);
     }
@@ -226,7 +223,7 @@ Student testStudent() {
     cout << "Size: " << student.storageSize << endl;
     cout << "Key: " << student.storage[i].key << endl;
     cout << "Name: " << getFuildName((Fuild)student.storage[i].key) << endl;
-    cout << "Value: " << student.storage[i].value << endl;
+    cout << "Value: " << student.storage[i].stringValue << endl;
   }
 
   cout << "Student fuild test OK" << endl;
@@ -248,7 +245,7 @@ void testGlobalStorage() {
   cout << "T: Storage size: " << storage.storageSize << endl;
   for (int i = 0; i < storage.storageSize; i++) {
     for (int j = 0; j < storage.storage[i].storageSize; j++) {
-      cout << "Key: " << storage.storage[i].storage[j].key << " " << getFuildName(storage.storage[i].storage[j].key) << " : " << storage.storage[i].storage[j].value << endl;
+      cout << "Key: " << storage.storage[i].storage[j].key << " " << getFuildName(storage.storage[i].storage[j].key) << " : " << storage.storage[i].storage[j].stringValue << endl;
     }
     cout << "================" << endl;
   }
