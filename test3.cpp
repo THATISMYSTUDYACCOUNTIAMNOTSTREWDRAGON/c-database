@@ -5,7 +5,6 @@
 #include <limits>
 
 using namespace std;
-
 enum Fuild {
   ID,
   Name,
@@ -21,24 +20,22 @@ enum Fuild {
   Mark3,
 };
 
-enum FuildType { INT, STRING };
+enum FuildType { INT, STRING, DATE };
 
-struct MenuItem {
-  const int id;
-  const char *name;
-  const function<void()> func;
+struct FuildInfo {
+  char name[100];
+  FuildType fuildType;
 };
 
-struct KeyString {
+struct KeyValue {
   Fuild key;
-  FuildType fuildType;
-  char stringValue[100];
   int intValue;
+  char stringValue[100];
 };
 
 struct Student {
   int storageSize;
-  KeyString *storage;
+  KeyValue *storage;
 };
 
 struct Storage {
@@ -46,67 +43,68 @@ struct Storage {
   Student *storage;
 };
 
+struct MenuItem {
+  int id;
+  const char *name;
 
-bool isInt(char *string) {
-  for (int i = 0; i < strlen(string); i++) {
-    if (!(47 < string[i] && string[i] < 58))
-      return false;
-  }
-  return true;
-}
+  function<Storage(Storage&)> globalStoreCallback;
+  function<Student(function<Student(Student&)>)> studentStoreCallback;
+};
 
-bool checkType(char *string, FuildType type) {
-  bool isCorect = true;
-  switch (type) {
-  case FuildType::INT:
-    isCorect = isInt(string);
-    break;
-  }
-  return isCorect;
-}
+struct Menu {
+  int storageSize;
+  MenuItem *storage;
+};
 
-FuildType defineFuildType(char *string) {
-  if (strstr(string, "(int)") != NULL) {
-    return FuildType::INT;
-  }
-  return FuildType::STRING;
-}
-
-inline const char *getFuildName(Fuild v) {
+FuildInfo getFuildInfo(Fuild v) {
+  FuildInfo fuildInfo;
   switch (v) {
   case ID:
-    return "ID(int)";
+    fuildInfo = {"ID", FuildType::INT};
+    break;
   case Sername:
-    return "Sername(string)";
+    fuildInfo = {"Sername", FuildType::STRING};
+    break;
   case Name:
-    return "Name(string)";
+    fuildInfo = {"Name", FuildType::STRING};
+    break;
   case Patronical:
-    return "Patronical(string)";
+    fuildInfo = {"Patronical", FuildType::STRING};
+    break;
   case Enterance_Date:
-    return "Enterance_Date(string)";
+    fuildInfo = {"Enterance date", FuildType::DATE};
+    break;
   case Course:
-    return "Course(int)";
+    fuildInfo = {"Course", FuildType::INT};
+    break;
   case Subject1:
-    return "Subject1(string)";
+    fuildInfo = {"Subject1", FuildType::STRING};
+    break;
   case Mark1:
-    return "Mark1(int)";
+    fuildInfo = {"Mark1", FuildType::INT};
+    break;
   case Subject2:
-    return "Subject2(string)";
+    fuildInfo = {"Subject2", FuildType::STRING};
+    break;
   case Mark2:
-    return "Mark2(int)";
+    fuildInfo = {"Mark2", FuildType::INT};
+    break;
   case Subject3:
-    return "Subject3(string)";
+    fuildInfo = {"Subject3", FuildType::STRING};
+    break;
   case Mark3:
-    return "Mark3(int)";
-
+    fuildInfo = {"Mark3", FuildType::INT};
+    break;
   default:
-    return "[Unknown]";
+    fuildInfo = {"[Unknown]", FuildType::STRING};
+    break;
   }
+  return fuildInfo;
 }
-void appendStudentFuild(Student &student, KeyString keyvalue) {
+void appendStudentFuild(Student &student, KeyValue keyvalue) {
   int newStorageSize = student.storageSize + 1;
 
-  KeyString *newStorage = new KeyString[newStorageSize];
+  KeyValue *newStorage = new KeyValue[newStorageSize];
 
   for (int i = 0; i < student.storageSize; i++) {
     newStorage[i] = student.storage[i];
@@ -125,22 +123,26 @@ void appendStudentFuild(Student &student, KeyString keyvalue) {
 
 void fillStudentWithFile(Student &student) {}
 
-void fillStudentWithKeybord(Student &student) {
-  for (int i = Fuild::Name; i < Fuild::Mark3; ++i) {
-    KeyString keyvalue;
+Student fillStudentWithKeybord(Student student) {
+  Student newStudent = student;
 
+  for (int i = Fuild::Name; i < Fuild::Mark3; ++i) {
+    KeyValue keyvalue;
     keyvalue.key = (Fuild)i;
-    cout << "Input " << getFuildName((Fuild)i) << ": ";
-    cin >> keyvalue.stringValue;
+
+    cout << "Input " << getFuildInfo((Fuild)i).name << ": "; cin >> keyvalue.stringValue;
+
     appendStudentFuild(student, keyvalue);
   }
+
+  return newStudent;
 }
 
-Student createNewStudent(function<void(Student &)> callback) {
+Student createNewStudent(function<Student(Student&)> callback) {
   Student student;
 
   student.storageSize = 0;
-  student.storage = new KeyString[student.storageSize];
+  student.storage = new KeyValue[student.storageSize];
 
   callback(student);
 
@@ -171,97 +173,111 @@ Storage createNewStorage() {
   Storage storage;
 
   storage.storageSize = 0;
-  storage.storage = new Student[0];
+  storage.storage = new Student[storage.storageSize];
 
   return storage;
 }
 
-Student testStudent() {
-  Student student;
+void fillMenuItemsWithNonePolimorfdata(const char *name, MenuItem &menuItem, Menu menu) {
+  menuItem.id = menu.storageSize;
+  menuItem.name = name;
+}
 
-  student.storageSize = 0;
-  student.storage = new KeyString[student.storageSize];
+MenuItem createMenuItem(const char *name, Menu menu, function<Storage(Storage&)> callback) {
+  MenuItem menuItem;
 
-  // cout << "Appending only" << endl;
-  for (int j = 0; j < 1; j++) {
-    for (int i = Fuild::Name; i <= Fuild::Mark3; i++) {
-      KeyString keyvalue;
+  fillMenuItemsWithNonePolimorfdata(name, menuItem, menu);
 
-      cout << "Transition: " << (Fuild(i)) << endl;
-      keyvalue.key = (Fuild)i;
-      // char snum[5];
-      //
-      // sprintf(snum, "%d", i);
-      //
-      // FuildType type = defineFuildType((char*)getFuildName((Fuild)i));
-      //
-      // cout << "Name: " << getFuildName((Fuild)i) << endl;
-      // cout << "Type: " << type << endl;
-      //
-      // if (checkType(temp_str, type)) {
-      //   cout << "Type OK" << endl;
-      // } else {
-      //   cout << "Type BAD" << endl;
-      //   while (!checkType(temp_str, type)) {
-      //     cout << temp_str << endl;
-      //     strcpy(temp_str, "100");
-      //   }
-      // }
+  menuItem.globalStoreCallback = callback;
 
-      strcpy(keyvalue.stringValue, "1000f");
+  return menuItem;
+}
 
-      cout << "Checking key value..." << endl;
-      cout << "Key: " << keyvalue.key << endl;
-      cout << "Value: " << keyvalue.stringValue << endl;
+MenuItem createMenuItem(const char *name, Menu menu, function<Student(function<Student(Student&)>)> callback) {
+  MenuItem menuItem;
 
-      appendStudentFuild(student, keyvalue);
+  fillMenuItemsWithNonePolimorfdata(name, menuItem, menu);
+
+  menuItem.studentStoreCallback = callback;
+
+  return menuItem;
+}
+
+Menu createMenu() {
+  Menu menu;
+
+  menu.storageSize = 0;
+  menu.storage = new MenuItem[menu.storageSize];
+
+  return menu;
+}
+
+void appendMenuItem(Menu &menu, MenuItem menuItem) {
+  int newStorageSize = menu.storageSize + 1;
+
+  MenuItem *newStorage = new MenuItem[newStorageSize];
+
+  for (int i = 0; i < menu.storageSize; i++) {
+    newStorage[i] = menu.storage[i];
+  }
+
+  newStorage[menu.storageSize] = menuItem;
+
+  delete[] menu.storage;
+
+  menu.storage = newStorage;
+
+  newStorage = NULL;
+
+  menu.storageSize = newStorageSize;
+}
+
+Storage printAllStudents(Storage storage) {
+  Storage newStorage = storage;
+
+  if (newStorage.storageSize == 0) {
+    cout << "There is no data for now" << endl;
+  }
+  for (int i = 0; i < newStorage.storageSize; i++) {
+    for (int j = Fuild::Name; j <= Fuild::Mark3; j++) {
+      cout << newStorage.storage[i].storage[j].key << endl;
     }
   }
 
-  // cout << "Print values of student" << endl;
-  for (int i = 0; i < student.storageSize; i++) {
-    cout << "Size: " << student.storageSize << endl;
-    cout << "Key: " << student.storage[i].key << endl;
-    cout << "Name: " << getFuildName((Fuild)student.storage[i].key) << endl;
-    cout << "Value: " << student.storage[i].stringValue << endl;
-  }
-
-  cout << "Student fuild test OK" << endl;
-
-  return student;
+  return newStorage;
 }
 
-void testGlobalStorage() {
-  Storage storage;
+void fillMenu(Menu &menu) {
+  appendMenuItem(menu, createMenuItem("Print all students", menu, printAllStudents));
+  appendMenuItem(menu, createMenuItem("Append new student", menu, createNewStudent));
+  // appendMenuItem(menu, createMenuItem("Update student", menu, printAllStudents));
+  // appendMenuItem(menu, createMenuItem("Delete student", menu, printAllStudents));
+  // appendMenuItem(menu, createMenuItem("Load students from file", menu, printAllStudents));
+  // appendMenuItem(menu, createMenuItem("Upload students to file", menu, printAllStudents));
+}
 
-  storage.storageSize = 0;
-  storage.storage = new Student[storage.storageSize];
-
-  for (int i = 0; i < 10; i++) {
-    Student student = testStudent();
-    appendStudent(storage, student);
+void printMenu(Menu menu) {
+  for (int i = 0; i < menu.storageSize; i++) {
+    cout << menu.storage[i].id << " " << menu.storage[i].name << endl;
   }
+}
 
-  cout << "T: Storage size: " << storage.storageSize << endl;
-  for (int i = 0; i < storage.storageSize; i++) {
-    for (int j = 0; j < storage.storage[i].storageSize; j++) {
-      cout << "Key: " << storage.storage[i].storage[j].key << " " << getFuildName(storage.storage[i].storage[j].key) << " : " << storage.storage[i].storage[j].stringValue << endl;
+void userEventLisenter(Menu menu, Storage &storage) {
+  int command;
+  cout << "Please input command: "; cin >> command;
+  for (int i = 0; i < menu.storageSize; i++) {
+    if (command == menu.storage[i].id) {
+      menu.storage[i].globalStoreCallback(storage);
     }
-    cout << "================" << endl;
   }
-
-  cout << "Test passed" << endl;
 }
-
-struct Menu {
-  int storageSize;
-  MenuItem *storage;
-};
 
 int main() {
-
-  // testStudent();
-  testGlobalStorage();
+  Storage storage = createNewStorage();
+  Menu menu = createMenu();
+  fillMenu(menu);
+  printMenu(menu);
+  userEventLisenter(menu, storage);
 
   return 0;
 }

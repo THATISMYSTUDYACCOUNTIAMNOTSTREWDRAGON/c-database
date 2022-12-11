@@ -71,7 +71,7 @@ void validateIntegerInput(int number) {
 struct MenuItem {
   int id;
   const char *name;
-  function<void()> func;
+  function<void()> globalStoreCallback;
 };
 
 int menuItemId = 0;
@@ -80,7 +80,7 @@ MenuItem createNewMenuItem(const char name[100], function<void()> func) {
 
   menuItem.id = menuItemId;
   menuItem.name = name;
-  menuItem.func = func;
+  menuItem.globalStoreCallback = func;
 
   menuItemId += 1;
 
@@ -481,7 +481,7 @@ void readUserInput() {
 
   for (int i = 0; i < menuItemsAmount; i++) {
     if (i == command) {
-      menuItems[i].func();
+      menuItems[i].globalStoreCallback();
     }
   }
   readUserInput();
