@@ -132,7 +132,7 @@ Student fillStudentWithKeybord(Student student) {
 
     cout << "Input " << getFuildInfo((Fuild)i).name << ": "; cin >> keyvalue.stringValue;
 
-    appendStudentFuild(student, keyvalue);
+    appendStudentFuild(newStudent, keyvalue);
   }
 
   return newStudent;
@@ -144,7 +144,7 @@ Student createNewStudent(function<Student(Student&)> callback) {
   student.storageSize = 0;
   student.storage = new KeyValue[student.storageSize];
 
-  callback(student);
+  student = callback(student);
 
   return student;
 }
@@ -238,9 +238,10 @@ Storage printAllStudents(Storage storage) {
   if (newStorage.storageSize == 0) {
     cout << "There is no data for now" << endl;
   }
+
   for (int i = 0; i < newStorage.storageSize; i++) {
     for (int j = Fuild::Name; j <= Fuild::Mark3; j++) {
-      cout << newStorage.storage[i].storage[j].key << endl;
+      cout << newStorage.storage[i].storage[j].stringValue << endl;
     }
   }
 
@@ -263,13 +264,33 @@ void printMenu(Menu menu) {
 }
 
 void userEventLisenter(Menu menu, Storage &storage) {
+
   int command;
   cout << "Please input command: "; cin >> command;
+
+  while (true) {
+    if (cin.fail()) {
+      cin.clear();
+      cin.ignore(numeric_limits<streamsize>::max(), '\n');
+      cout << "You have entered wrong input" << endl;
+      userEventLisenter(menu, storage);
+    }
+    if (!cin.fail())
+      break;
+  }
+
   for (int i = 0; i < menu.storageSize; i++) {
     if (command == menu.storage[i].id) {
-      menu.storage[i].globalStoreCallback(storage);
+      if (menu.storage[i].globalStoreCallback) {
+        menu.storage[i].globalStoreCallback(storage);
+      }
+      if (menu.storage[i].studentStoreCallback) {
+        appendStudent(storage, menu.storage[i].studentStoreCallback(fillStudentWithKeybord));
+      }
     }
   }
+
+  userEventLisenter(menu, storage);
 }
 
 int main() {
