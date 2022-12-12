@@ -1,10 +1,9 @@
 #include <cstring>
-#include<string.h>
-#include <iomanip>
 #include <functional>
 #include <iomanip>
 #include <iostream>
 #include <limits>
+#include <string.h>
 
 using namespace std;
 enum Fuild {
@@ -24,6 +23,12 @@ enum Fuild {
 
 enum FuildType { INT, STRING, DATE };
 
+struct Date {
+  int day;
+  int month;
+  int year;
+};
+
 struct FuildInfo {
   char name[100];
   FuildType fuildType;
@@ -33,6 +38,7 @@ struct KeyValue {
   Fuild key;
   int intValue;
   char stringValue[100];
+  Date dateValue;
 };
 
 struct Student {
@@ -49,9 +55,9 @@ struct MenuItem {
   int id;
   const char *name;
 
-  function<Storage(Storage&)> globalStoreCallback;
+  function<Storage(Storage &)> globalStoreCallback;
 
-  function<Student(function<Student(Student&)>)> studentStoreCallback;
+  function<Student(function<Student(Student &)>)> studentStoreCallback;
   // function<Student(function<Student(Student&)>)> studentsStoreCallback;
 };
 
@@ -105,6 +111,7 @@ FuildInfo getFuildInfo(Fuild v) {
   }
   return fuildInfo;
 }
+
 void appendStudentFuild(Student &student, KeyValue keyvalue) {
   int newStorageSize = student.storageSize + 1;
 
@@ -127,14 +134,93 @@ void appendStudentFuild(Student &student, KeyValue keyvalue) {
 
 void fillStudentWithFile(Student &student) {}
 
+bool validateFuild() {
+  while (true) {
+    if (cin.fail()) {
+      cin.clear();
+      cin.ignore(numeric_limits<streamsize>::max(), '\n');
+      return false;
+    }
+    if (!cin.fail())
+      return true;
+  }
+}
+
+void fillStudentFuild(int &fuild) {
+  cin >> fuild;
+  if (!validateFuild()) {
+    cout << "Введенное заначение должно быть числом" << endl;
+    fillStudentFuild(fuild);
+  }
+}
+
+void fillStudentFuild(char (&fuild)[]) {
+  cin >> fuild;
+  if (!validateFuild()) {
+    cout << "Введенное заначение должно быть строкой" << endl;
+    fillStudentFuild(fuild);
+  }
+}
+
+bool isValidDate(int year, int month, int day) {
+  unsigned int leap;
+  unsigned char mon_day[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+
+  /* check the rang of the year */
+  if ((year < 1) || (year >= 3200)) {
+    return false;
+  }
+
+  if ((month < 1) || (month > 12)) {
+    return false;
+  }
+
+  /* if it's leep year */
+  if (((year % 4 == 0) && (year % 100 != 0)) || (year % 400 == 0)) {
+    leap = 1;
+  } else {
+    leap = 0;
+  }
+
+  mon_day[1] += leap;
+
+  if ((day > mon_day[month - 1]) || (day < 1)) {
+    return false;
+  }
+
+  return true;
+}
+
+void fillStudentFuild(Date &date) {
+  cout << "День: "; fillStudentFuild(date.day);
+  cout << "Месяц: "; fillStudentFuild(date.month);
+  cout << "Год: "; fillStudentFuild(date.year);
+
+  if (!isValidDate(date.year, date.day, date.day)) {
+    cout << "Некорректный формат даты" << endl;
+    fillStudentFuild(date);
+  }
+}
+
 Student fillStudentWithKeybord(Student student) {
   Student newStudent = student;
 
   for (int i = Fuild::Name; i < Fuild::Mark3; ++i) {
     KeyValue keyvalue;
     keyvalue.key = (Fuild)i;
+    FuildInfo fuildInfo = getFuildInfo((Fuild)i);
 
-    cout << "Input " << getFuildInfo((Fuild)i).name << ": "; cin >> keyvalue.stringValue;
+    switch ((int)fuildInfo.fuildType) {
+    case ((int)FuildType::INT):
+      fillStudentFuild(keyvalue.intValue);
+      break;
+    case ((int)FuildType::STRING):
+      fillStudentFuild(keyvalue.intValue);
+      break;
+    case ((int)FuildType::DATE):
+      fillStudentFuild(keyvalue.dateValue);
+      break;
+    }
 
     appendStudentFuild(newStudent, keyvalue);
   }
@@ -142,7 +228,7 @@ Student fillStudentWithKeybord(Student student) {
   return newStudent;
 }
 
-Student createNewStudent(function<Student(Student&)> callback) {
+Student createNewStudent(function<Student(Student &)> callback) {
   Student student;
 
   student.storageSize = 0;
@@ -182,12 +268,14 @@ Storage createNewStorage() {
   return storage;
 }
 
-void fillMenuItemsWithNonePolimorfdata(const char *name, MenuItem &menuItem, Menu menu) {
+void fillMenuItemsWithNonePolimorfdata(const char *name, MenuItem &menuItem,
+                                       Menu menu) {
   menuItem.id = menu.storageSize;
   menuItem.name = name;
 }
 
-MenuItem createMenuItem(const char *name, Menu menu, function<Storage(Storage&)> callback) {
+MenuItem createMenuItem(const char *name, Menu menu,
+                        function<Storage(Storage &)> callback) {
   MenuItem menuItem;
 
   fillMenuItemsWithNonePolimorfdata(name, menuItem, menu);
@@ -197,7 +285,9 @@ MenuItem createMenuItem(const char *name, Menu menu, function<Storage(Storage&)>
   return menuItem;
 }
 
-MenuItem createMenuItem(const char *name, Menu menu, function<Student(function<Student(Student&)>)> callback) {
+MenuItem
+createMenuItem(const char *name, Menu menu,
+               function<Student(function<Student(Student &)>)> callback) {
   MenuItem menuItem;
 
   fillMenuItemsWithNonePolimorfdata(name, menuItem, menu);
@@ -256,14 +346,17 @@ Student updateStudent(Student student) {
 
   char fuildName[100];
 
-  cout << "Input fuild name: "; cin >> fuildName;
+  cout << "Input fuild name: ";
+  cin >> fuildName;
 
   for (int i = 0; i < newStudent.storageSize; i++) {
-    FuildInfo fuildInfo =  getFuildInfo((Fuild) newStudent.storage[i].key);
-    if (fuildInfo.name != getFuildInfo((Fuild) -2).name) { // this mean that fuild exists
+    FuildInfo fuildInfo = getFuildInfo((Fuild)newStudent.storage[i].key);
+    if (fuildInfo.name !=
+        getFuildInfo((Fuild)-2).name) { // this mean that fuild exists
       if (fuildInfo.fuildType == FuildType::STRING) {
-        char newFuild[100];  
-        cout << "Input new value: "; cin >> newFuild;
+        char newFuild[100];
+        cout << "Input new value: ";
+        cin >> newFuild;
         strcpy(newStudent.storage[i].stringValue, newFuild);
       }
     }
@@ -273,12 +366,15 @@ Student updateStudent(Student student) {
 }
 
 void fillMenu(Menu &menu) {
-  appendMenuItem(menu, createMenuItem("Print all students", menu, printAllStudents));
-  appendMenuItem(menu, createMenuItem("Append new student", menu, createNewStudent));
+  appendMenuItem(menu,
+                 createMenuItem("Print all students", menu, printAllStudents));
+  appendMenuItem(menu,
+                 createMenuItem("Append new student", menu, createNewStudent));
   appendMenuItem(menu, createMenuItem("Update student", menu, updateStudent));
-  // appendMenuItem(menu, createMenuItem("Delete student", menu, printAllStudents));
-  // appendMenuItem(menu, createMenuItem("Load students from file", menu, printAllStudents));
-  // appendMenuItem(menu, createMenuItem("Upload students to file", menu, printAllStudents));
+  // appendMenuItem(menu, createMenuItem("Delete student", menu,
+  // printAllStudents)); appendMenuItem(menu, createMenuItem("Load students from
+  // file", menu, printAllStudents)); appendMenuItem(menu,
+  // createMenuItem("Upload students to file", menu, printAllStudents));
 }
 
 void printMenu(Menu menu) {
@@ -290,7 +386,8 @@ void printMenu(Menu menu) {
 void userEventLisenter(Menu menu, Storage &storage) {
 
   int command;
-  cout << "Please input command: "; cin >> command;
+  cout << "Please input command: ";
+  cin >> command;
 
   while (true) {
     if (cin.fail()) {
@@ -309,7 +406,8 @@ void userEventLisenter(Menu menu, Storage &storage) {
         menu.storage[i].globalStoreCallback(storage);
       }
       if (menu.storage[i].studentStoreCallback) {
-        appendStudent(storage, menu.storage[i].studentStoreCallback(fillStudentWithKeybord));
+        appendStudent(storage, menu.storage[i].studentStoreCallback(
+                                   fillStudentWithKeybord));
       }
     }
   }
