@@ -1,4 +1,5 @@
 #include <cstring>
+#include <stdio.h>
 #include <functional>
 #include <iomanip>
 #include <iostream>
@@ -8,6 +9,30 @@
 const int stringLength = 255;
 
 using namespace std;
+
+char* itoa(int value, char* result, int base) {
+    // check that the base if valid
+    if (base < 2 || base > 36) { *result = '\0'; return result; }
+
+    char* ptr = result, *ptr1 = result, tmp_char;
+    int tmp_value;
+
+    do {
+        tmp_value = value;
+        value /= base;
+        *ptr++ = "zyxwvutsrqponmlkjihgfedcba9876543210123456789abcdefghijklmnopqrstuvwxyz" [35 + (tmp_value - value * base)];
+    } while ( value );
+
+    // Apply negative sign
+    if (tmp_value < 0) *ptr++ = '-';
+    *ptr-- = '\0';
+    while(ptr1 < ptr) {
+        tmp_char = *ptr;
+        *ptr--= *ptr1;
+        *ptr1++ = tmp_char;
+    }
+    return result;
+}
 
 enum Fuild {
   ID,
@@ -59,10 +84,7 @@ struct MenuItem {
   int id;
   const char *name;
 
-  function<Storage(Storage &)> globalStoreCallback;
-
-  function<Student(function<Student(Student &)>)> studentStoreCallback;
-  // function<Student(function<Student(Student&)>)> studentsStoreCallback;
+  function<void(Storage &)> globalStoreCallback;
 };
 
 struct Date {
@@ -199,7 +221,7 @@ void fillStudentFuild(char (&fuild)[100]) {
   }
 }
 
-void fillStudentFuild(Date date) {
+void fillStudentFuild(Date &date) {
   cout << endl;
   cout << "День : "; fillStudentFuild(date.day);
   cout << "Месяц : "; fillStudentFuild(date.month);
@@ -211,16 +233,15 @@ void fillStudentFuild(Date date) {
   }
 }
 
-void fillStudentFuild(Mark mark) {
+void fillStudentFuild(Mark &mark) {
   fillStudentFuild(mark.mark);
-
   if (!(1 <= mark.mark  && mark.mark <= 5)) {
     cout << " Некорректный ввод оценки" << endl;
     fillStudentFuild(mark);
   }
 }
 
-void fillStudentFuild(struct Course course) {
+void fillStudentFuild(struct Course &course) {
   fillStudentFuild(course.course);
 
   if (!(1 <= course.course  && course.course <= 6)) {
@@ -230,9 +251,8 @@ void fillStudentFuild(struct Course course) {
 }
 
 
-Student fillStudentWithKeybord(Student student) {
-  Student newStudent = student;
 
+void fillStudentWithKeybord(Student &student) {
   for (int i = Fuild::Name; i <= Fuild::Mark3; ++i) {
     KeyValue keyvalue;
     keyvalue.key = (Fuild)i;
@@ -240,45 +260,51 @@ Student fillStudentWithKeybord(Student student) {
 
     cout << fuildInfo.description;
 
+    char str[stringLength] = "";
+
     switch (fuildInfo.fuildType) {
       case (int)FuildType::DATE:
         Date date;
         fillStudentFuild(date);
+        strcpy(keyvalue.value, "fuckkk");
         break;
       case (int)FuildType::MARK:
         Mark mark;
         fillStudentFuild(mark);
+        itoa(mark.mark, keyvalue.value, 10);
         break;
       case (int)FuildType::COURSE:
         struct Course course;
         fillStudentFuild(course);
+        cout << course.course << endl;
+        itoa(course.course, keyvalue.value, 10);
         break;
       case (int)FuildType::STRING:
         char stringFuild[100];
         fillStudentFuild(stringFuild);
+        strcpy(keyvalue.value, stringFuild);
         break;
       case (int)FuildType::INT:
         int intValue;
         fillStudentFuild(intValue);
+        itoa(intValue, keyvalue.value, 10);
         break;
       default:
         cout << "Unknown type on student addition";
         break;
     }
 
-    appendStudentFuild(newStudent, keyvalue);
+    appendStudentFuild(student, keyvalue);
   }
-
-  return newStudent;
 }
 
-Student createNewStudent(function<Student(Student &)> callback) {
+Student createNewStudentFromKeyboard() {
   Student student;
 
   student.storageSize = 0;
   student.storage = new KeyValue[student.storageSize];
 
-  student = callback(student);
+  fillStudentWithKeybord(student);
 
   return student;
 }
@@ -318,25 +344,12 @@ void fillMenuItemsWithNonePolimorfdata(const char *name, MenuItem &menuItem,
   menuItem.name = name;
 }
 
-MenuItem createMenuItem(const char *name, Menu menu,
-    function<Storage(Storage &)> callback) {
+MenuItem createMenuItem(const char *name, Menu menu, function<void(Storage &)> callback) {
   MenuItem menuItem;
 
   fillMenuItemsWithNonePolimorfdata(name, menuItem, menu);
 
   menuItem.globalStoreCallback = callback;
-
-  return menuItem;
-}
-
-MenuItem
-createMenuItem(const char *name, Menu menu,
-    function<Student(function<Student(Student &)>)> callback) {
-  MenuItem menuItem;
-
-  fillMenuItemsWithNonePolimorfdata(name, menuItem, menu);
-
-  menuItem.studentStoreCallback = callback;
 
   return menuItem;
 }
@@ -370,7 +383,7 @@ void appendMenuItem(Menu &menu, MenuItem menuItem) {
   menu.storageSize = newStorageSize;
 }
 
-Storage printAllStudents(Storage storage) {
+void printAllStudents(Storage storage) {
 
   if (storage.storageSize == 0) {
     cout << "There is no data for now" << endl;
@@ -381,15 +394,16 @@ Storage printAllStudents(Storage storage) {
       cout << storage.storage[i].storage[j].value << endl;
     }
   }
+}
 
-  return storage;
+void appendStudentFromKeyboard(Storage &storage) {
+  Student student = createNewStudentFromKeyboard();
+  appendStudent(storage, student);
 }
 
 void fillMenu(Menu &menu) {
-  appendMenuItem(menu,
-      createMenuItem("Print all students", menu, printAllStudents));
-  appendMenuItem(menu,
-      createMenuItem("Append new student", menu, createNewStudent));
+  appendMenuItem(menu, createMenuItem("Print all students", menu, printAllStudents));
+  appendMenuItem(menu, createMenuItem("Append new student", menu, appendStudentFromKeyboard));
   // appendMenuItem(menu, createMenuItem("Update student", menu, updateStudent));
   // appendMenuItem(menu, createMenuItem("Delete student", menu,
   // printAllStudents)); appendMenuItem(menu, createMenuItem("Load students from
@@ -422,17 +436,90 @@ void userEventLisenter(Menu menu, Storage &storage) {
 
   for (int i = 0; i < menu.storageSize; i++) {
     if (command == menu.storage[i].id) {
-      if (menu.storage[i].globalStoreCallback) {
-        menu.storage[i].globalStoreCallback(storage);
-      }
-      if (menu.storage[i].studentStoreCallback) {
-        appendStudent(storage, menu.storage[i].studentStoreCallback(fillStudentWithKeybord));
-      }
+      menu.storage[i].globalStoreCallback(storage);
     }
   }
 
   userEventLisenter(menu, storage);
 }
+
+// Student testStudent() {
+//   Student student;
+//
+//   student.storageSize = 0;
+//   student.storage = new KeyValue[student.storageSize];
+//
+//   // cout << "Appending only" << endl;
+//   for (int j = 0; j < 1; j++) {
+//     for (int i = Fuild::Name; i <= Fuild::Mark3; i++) {
+//       KeyValue keyvalue;
+//
+//       cout << "Transition: " << (Fuild(i)) << endl;
+//       keyvalue.key = (Fuild)i;
+//       // char snum[5];
+//       //
+//       // sprintf(snum, "%d", i);
+//       //
+//       // FuildType type = defineFuildType((char*)getFuildName((Fuild)i));
+//       //
+//       // cout << "Name: " << getFuildName((Fuild)i) << endl;
+//       // cout << "Type: " << type << endl;
+//       //
+//       // if (checkType(temp_str, type)) {
+//       //   cout << "Type OK" << endl;
+//       // } else {
+//       //   cout << "Type BAD" << endl;
+//       //   while (!checkType(temp_str, type)) {
+//       //     cout << temp_str << endl;
+//       //     strcpy(temp_str, "100");
+//       //   }
+//       // }
+//
+//       strcpy(keyvalue.value, "1000f");
+//
+//       cout << "Checking key value..." << endl;
+//       cout << "Key: " << keyvalue.key << endl;
+//       cout << "Value: " << keyvalue.value << endl;
+//
+//       appendStudentFuild(student, keyvalue);
+//     }
+//   }
+//
+//   // cout << "Print values of student" << endl;
+//   for (int i = 0; i < student.storageSize; i++) {
+//     cout << "Size: " << student.storageSize << endl;
+//     cout << "Key: " << student.storage[i].key << endl;
+//     cout << "Name: " << getFuildInfo(student.storage[i].key).name << endl;
+//     cout << "Value: " << student.storage[i].value << endl;
+//   }
+//
+//   cout << "Student fuild test OK" << endl;
+//
+//   return student;
+// }
+//
+// void testGlobalStorage() {
+//   Storage storage;
+//
+//   storage.storageSize = 0;
+//   storage.storage = new Student[storage.storageSize];
+//
+//   for (int i = 0; i < 10; i++) {
+//     Student student = testStudent();
+//     appendStudent(storage, student);
+//   }
+//
+//   cout << "T: Storage size: " << storage.storageSize << endl;
+//   for (int i = 0; i < storage.storageSize; i++) {
+//     for (int j = 0; j < storage.storage[i].storageSize; j++) {
+//       cout << "Key: " << storage.storage[i].storage[j].key << " " << getFuildInfo(storage.storage[i].storage[i].key).name << " : " << storage.storage[i].storage[j].value << endl;
+//     }
+//     cout << "================" << endl;
+//   }
+//
+//   cout << "Test passed" << endl;
+// }
+
 
 int main() {
   Storage storage = createNewStorage();
