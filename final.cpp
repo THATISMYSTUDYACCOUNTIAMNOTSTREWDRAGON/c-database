@@ -1,37 +1,62 @@
 #include <cstring>
-#include <stdio.h>
+#include <fstream>
 #include <functional>
 #include <iomanip>
 #include <iostream>
 #include <limits>
-#include <string.h>
+#include <stdio.h>
 
 const int stringLength = 255;
 
 using namespace std;
 
-char* itoa(int value, char* result, int base) {
-    // check that the base if valid
-    if (base < 2 || base > 36) { *result = '\0'; return result; }
+bool isYes() {
+  char yes;
+  cin >> yes;
+  if (yes == 'y') {
+    return true;
+  }
+  return false;
+}
 
-    char* ptr = result, *ptr1 = result, tmp_char;
-    int tmp_value;
+void clear() { system("clear"); }
 
-    do {
-        tmp_value = value;
-        value /= base;
-        *ptr++ = "zyxwvutsrqponmlkjihgfedcba9876543210123456789abcdefghijklmnopqrstuvwxyz" [35 + (tmp_value - value * base)];
-    } while ( value );
+void cleanOrNot() {
+  char y;
+  cout << "Clearn output(Y/n): ";
+  cin >> y;
+  if (y == 'y') {
+    clear();
+  }
+}
 
-    // Apply negative sign
-    if (tmp_value < 0) *ptr++ = '-';
-    *ptr-- = '\0';
-    while(ptr1 < ptr) {
-        tmp_char = *ptr;
-        *ptr--= *ptr1;
-        *ptr1++ = tmp_char;
-    }
+char *itoa(int value, char *result, int base) {
+  // check that the base if valid
+  if (base < 2 || base > 36) {
+    *result = '\0';
     return result;
+  }
+
+  char *ptr = result, *ptr1 = result, tmp_char;
+  int tmp_value;
+
+  do {
+    tmp_value = value;
+    value /= base;
+    *ptr++ = "zyxwvutsrqponmlkjihgfedcba9876543210123456789abcdefghijklmnopqrst"
+             "uvwxyz"[35 + (tmp_value - value * base)];
+  } while (value);
+
+  // Apply negative sign
+  if (tmp_value < 0)
+    *ptr++ = '-';
+  *ptr-- = '\0';
+  while (ptr1 < ptr) {
+    tmp_char = *ptr;
+    *ptr-- = *ptr1;
+    *ptr1++ = tmp_char;
+  }
+  return result;
 }
 
 enum Fuild {
@@ -49,7 +74,7 @@ enum Fuild {
   Mark3,
 };
 
-enum FuildType { INT, STRING, DATE, COURSE, MARK };
+enum FuildType { Id, INT, STRING, DATE, COURSE, MARK };
 
 struct Course {
   int course;
@@ -101,50 +126,50 @@ struct Menu {
 FuildInfo getFuildInfo(Fuild v) {
   FuildInfo fuildInfo;
   switch (v) {
-    case ID:
-      fuildInfo = {"ID", "ID : ", FuildType::INT};
-      break;
-    case Sername:
-      fuildInfo = {"Фамилия", "Фамилия: ", FuildType::STRING};
-      break;
-    case Name:
-      fuildInfo = {"Имя", "Имя: ", FuildType::STRING};
-      break;
-    case Patronical:
-      fuildInfo = {"Отчество", "Отчество: ", FuildType::STRING};
-      break;
-    case Enterance_Date:
-      fuildInfo = {"Дата поступления", "Дата поступления", FuildType::DATE};
-      break;
-    case Course:
-      fuildInfo = {"Курс", "Курс: ", FuildType::COURSE};
-      break;
-    case Subject1:
-      fuildInfo = {"Предемет 1", "Предмет 1: ", FuildType::STRING};
-      break;
-    case Mark1:
-      fuildInfo = {"Оценка 1", "Оценка по предмету 1: ", FuildType::MARK};
-      break;
-    case Subject2:
-      fuildInfo = {"Предмет 2", "Предмет 2: ", FuildType::STRING};
-      break;
-    case Mark2:
-      fuildInfo = {"Оценка 2", "Оценка 2: ",  FuildType::MARK};
-      break;
-    case Subject3:
-      fuildInfo = {"Предмет 3", "Пердмет 3: ", FuildType::STRING};
-      break;
-    case Mark3:
-      fuildInfo = {"Оценка 3", "Оценка 3: ", FuildType::MARK};
-      break;
-    default:
-      fuildInfo = {"[Unknown]", FuildType::STRING};
-      break;
+  case Fuild::ID:
+    fuildInfo = {"ID", "ID : ", FuildType::Id};
+    break;
+  case Sername:
+    fuildInfo = {"Фамилия", "Фамилия: ", FuildType::STRING};
+    break;
+  case Name:
+    fuildInfo = {"Имя", "Имя: ", FuildType::STRING};
+    break;
+  case Patronical:
+    fuildInfo = {"Отчество", "Отчество: ", FuildType::STRING};
+    break;
+  case Enterance_Date:
+    fuildInfo = {"Дата поступления", "Дата поступления", FuildType::DATE};
+    break;
+  case Course:
+    fuildInfo = {"Курс", "Курс: ", FuildType::COURSE};
+    break;
+  case Subject1:
+    fuildInfo = {"Предемет 1", "Предмет 1: ", FuildType::STRING};
+    break;
+  case Mark1:
+    fuildInfo = {"Оценка 1", "Оценка по предмету 1: ", FuildType::MARK};
+    break;
+  case Subject2:
+    fuildInfo = {"Предмет 2", "Предмет 2: ", FuildType::STRING};
+    break;
+  case Mark2:
+    fuildInfo = {"Оценка 2", "Оценка 2: ", FuildType::MARK};
+    break;
+  case Subject3:
+    fuildInfo = {"Предмет 3", "Пердмет 3: ", FuildType::STRING};
+    break;
+  case Mark3:
+    fuildInfo = {"Оценка 3", "Оценка 3: ", FuildType::MARK};
+    break;
+  default:
+    fuildInfo = {"[Unknown]", FuildType::STRING};
+    break;
   }
   return fuildInfo;
 }
 
-bool isValidDate(int year, int month, int day) {
+bool isDate(int year, int month, int day) {
   unsigned int leap;
   unsigned char mon_day[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
@@ -193,7 +218,7 @@ void appendStudentFuild(Student &student, KeyValue keyvalue) {
 
 void fillStudentWithFile(Student &student) {}
 
-bool validateFuild() {
+bool isNormalInput() {
   while (true) {
     if (cin.fail()) {
       cin.clear();
@@ -205,106 +230,144 @@ bool validateFuild() {
   }
 }
 
+bool isInt(char *string) {
+  int j = 0;
+  while (string[j]) {
+    if (!(47 < string[j] && string[j] < 58)) {
+      return false;
+    }
+    j++;
+  }
+  return true;
+}
+
 void fillStudentFuild(int &fuild) {
   cin >> fuild;
-  if (!validateFuild()) {
-    cout << " Введенное заначение должно быть числом: ";
+  if (!isNormalInput()) {
+    cout << " Введенное заначение должно быть "
+            "числом: ";
     fillStudentFuild(fuild);
   }
 }
 
 void fillStudentFuild(char (&fuild)[100]) {
   cin >> fuild;
-  if (!validateFuild()) {
-    cout << " Введенное заначение должно быть строкой: ";
+  if (!isNormalInput()) {
+    cout << " Введенное заначение должно быть "
+            "строкой: ";
     fillStudentFuild(fuild);
   }
 }
 
 void fillStudentFuild(Date &date) {
   cout << endl;
-  cout << "День : "; fillStudentFuild(date.day);
-  cout << "Месяц : "; fillStudentFuild(date.month);
-  cout << "Год : "; fillStudentFuild(date.year);
+  cout << "День : ";
+  fillStudentFuild(date.day);
+  cout << "Месяц : ";
+  fillStudentFuild(date.month);
+  cout << "Год : ";
+  fillStudentFuild(date.year);
 
-  if (!isValidDate(date.year, date.month, date.day)) {
+  if (!isDate(date.year, date.month, date.day)) {
     cout << " Некорректный формат даты" << endl;
     fillStudentFuild(date);
   }
 }
 
+bool isMark(Mark mark) {
+  if (!(1 <= mark.mark && mark.mark <= 5)) {
+    return false;
+  }
+  return true;
+}
+
 void fillStudentFuild(Mark &mark) {
   fillStudentFuild(mark.mark);
-  if (!(1 <= mark.mark  && mark.mark <= 5)) {
+  if (!isMark(mark)) {
     cout << " Некорректный ввод оценки" << endl;
     fillStudentFuild(mark);
   }
 }
 
+bool isCurse(struct Course course) {
+  if (!(1 <= course.course && course.course <= 6)) {
+    return false;
+  }
+  return true;
+}
+
 void fillStudentFuild(struct Course &course) {
   fillStudentFuild(course.course);
 
-  if (!(1 <= course.course  && course.course <= 6)) {
+  if (!isCurse(course)) {
     cout << " Некорректный ввод курса" << endl;
     fillStudentFuild(course);
   }
 }
 
+void fillStudentWithKeybord(Storage &storage, Student &student) {
+  KeyValue keyvalue;
+  keyvalue.key = Fuild::ID;
+  FuildInfo fuildInfo = getFuildInfo(Fuild::ID);
+  itoa(storage.storageSize, keyvalue.value, 10);
+  appendStudentFuild(student, keyvalue);
 
-
-void fillStudentWithKeybord(Student &student) {
-  for (int i = Fuild::Name; i <= Fuild::Mark3; ++i) {
+  for (int i = Fuild::Name; i <= Fuild::Mark3; i++) {
     KeyValue keyvalue;
     keyvalue.key = (Fuild)i;
     FuildInfo fuildInfo = getFuildInfo((Fuild)i);
 
     cout << fuildInfo.description;
 
-    char str[stringLength] = "";
-
     switch (fuildInfo.fuildType) {
-      case (int)FuildType::DATE:
-        Date date;
-        fillStudentFuild(date);
-        strcpy(keyvalue.value, "fuckkk");
-        break;
-      case (int)FuildType::MARK:
-        Mark mark;
-        fillStudentFuild(mark);
-        itoa(mark.mark, keyvalue.value, 10);
-        break;
-      case (int)FuildType::COURSE:
-        struct Course course;
-        fillStudentFuild(course);
-        cout << course.course << endl;
-        itoa(course.course, keyvalue.value, 10);
-        break;
-      case (int)FuildType::STRING:
-        char stringFuild[100];
-        fillStudentFuild(stringFuild);
-        strcpy(keyvalue.value, stringFuild);
-        break;
-      case (int)FuildType::INT:
-        int intValue;
-        fillStudentFuild(intValue);
-        itoa(intValue, keyvalue.value, 10);
-        break;
-      default:
-        cout << "Unknown type on student addition";
-        break;
+    case (int)FuildType::DATE:
+      Date date;
+      fillStudentFuild(date);
+      strcpy(keyvalue.value, "fuckkk");
+      break;
+    case (int)FuildType::MARK:
+      Mark mark;
+      fillStudentFuild(mark);
+      itoa(mark.mark, keyvalue.value, 10);
+      break;
+    case (int)FuildType::COURSE:
+      struct Course course;
+      fillStudentFuild(course);
+      cout << course.course << endl;
+      itoa(course.course, keyvalue.value, 10);
+      break;
+    case (int)FuildType::STRING:
+      char stringFuild[100];
+      fillStudentFuild(stringFuild);
+      strcpy(keyvalue.value, stringFuild);
+      break;
+    case (int)FuildType::INT:
+      int intValue;
+      fillStudentFuild(intValue);
+      itoa(intValue, keyvalue.value, 10);
+      break;
+    default:
+      cout << "Unknown type on student addition";
+      break;
     }
 
     appendStudentFuild(student, keyvalue);
   }
 }
 
-Student createNewStudentFromKeyboard() {
+Student initStudent() {
   Student student;
 
   student.storageSize = 0;
   student.storage = new KeyValue[student.storageSize];
 
-  fillStudentWithKeybord(student);
+  return student;
+}
+
+Student createNewStudentFromKeyboard(Storage &storage) {
+  Student student = initStudent();
+
+  fillStudentWithKeybord(storage, student);
 
   return student;
 }
@@ -339,12 +402,13 @@ Storage createNewStorage() {
 }
 
 void fillMenuItemsWithNonePolimorfdata(const char *name, MenuItem &menuItem,
-    Menu menu) {
+                                       Menu menu) {
   menuItem.id = menu.storageSize;
   menuItem.name = name;
 }
 
-MenuItem createMenuItem(const char *name, Menu menu, function<void(Storage &)> callback) {
+MenuItem createMenuItem(const char *name, Menu menu,
+                        function<void(Storage &)> callback) {
   MenuItem menuItem;
 
   fillMenuItemsWithNonePolimorfdata(name, menuItem, menu);
@@ -390,24 +454,164 @@ void printAllStudents(Storage storage) {
   }
 
   for (int i = 0; i < storage.storageSize; i++) {
-    for (int j = Fuild::Name; j <= Fuild::Mark3; j++) {
-      cout << storage.storage[i].storage[j].value << endl;
+    for (int j = 0; j <= Fuild::Mark3; j++) {
+      cout << j << " " << storage.storage[i].storage[j].value << endl;
     }
   }
 }
 
+bool validateStudent(Student student) {
+  for (int j = Fuild::ID; j <= Fuild::Mark3; j++) {
+    bool isFuild = false;
+
+    char *value = student.storage[j].value;
+
+    switch (j) {
+    case Fuild::ID:
+      isFuild = isInt(value);
+      break;
+    case Fuild::Sername:
+    case Fuild::Name:
+    case Fuild::Patronical:
+    case Fuild::Subject1:
+    case Fuild::Subject2:
+    case Fuild::Subject3:
+      break;
+    case Fuild::Course:
+      struct Course course;
+      course.course = atoi(value);
+      isFuild = isCurse(course);
+      break;
+    case Fuild::Enterance_Date:
+      isFuild = true;
+      break;
+    case Fuild::Mark1:
+    case Fuild::Mark2:
+    case Fuild::Mark3:
+      Mark mark = {atoi(value)};
+      isFuild = isMark(mark);
+      break;
+    }
+
+    if (!isFuild) {
+      cout << "GG vp приплыли, student не student мана" << endl;
+      break;
+    }
+  }
+  return true;
+}
+
+void deleteStudent(Storage &storage) {
+  int id;
+  cout << "Please input user id: ";
+  cin >> id;
+
+  int elements_to_move = storage.storageSize - id - 1;
+}
+
+void importDatabaseFromFile(Storage &storage) {
+  ifstream file("./input.txt");
+
+  char line[stringLength * 13] = "";
+  char delim[] = ";";
+
+  Storage newStorage = createNewStorage();
+
+  while (file.getline(line, stringLength * 13)) {
+    char *ptr = strtok(line, delim);
+    Student student = initStudent();
+
+    if (strlen(line) == 0) {
+      continue;
+    }
+
+    for (int i = Fuild::ID; i <= Fuild::Mark3; i++) {
+      KeyValue keyvalue;
+      keyvalue.key = (Fuild)i;
+      if (NULL != ptr) {
+        strcpy(keyvalue.value, ptr);
+        appendStudentFuild(student, keyvalue);
+        ptr = strtok(NULL, delim);
+      }
+    }
+
+    appendStudent(newStorage, student);
+  }
+
+  storage = newStorage;
+}
+
 void appendStudentFromKeyboard(Storage &storage) {
-  Student student = createNewStudentFromKeyboard();
+  Student student = createNewStudentFromKeyboard(storage);
   appendStudent(storage, student);
+}
+
+void updateStudent(Storage &storage) {
+  int id;
+  cout << "Input user id to delete: ";
+  cin >> id;
+
+  for (int i = 0; i < storage.storageSize; i++) {
+    Student student = storage.storage[i];
+    Fuild currentID = student.storage[0].key;
+    if ((int)currentID == (int)id) {
+      cout << "Пользователь найден" << endl;
+      cout << "Хотите заменить запись полностью?" << endl;
+      if (isYes()) {
+        Student newStudent = createNewStudentFromKeyboard(storage);
+        storage.storage[i] = newStudent;
+      }
+    }
+  }
+}
+
+void clearFile(char fileName[stringLength]) {
+  ofstream file(fileName); 
+  file << "";
+  file.close();
+}
+
+void doClearFile(char fileName[stringLength]) {
+  cout << "Do you wanna clear the file? " << endl;
+  if (isYes()) {
+    clearFile(fileName);
+  }
+}
+
+void exportDatabaseToFile(Storage &storage) {
+  char fileName[stringLength] = "how_low.txt";
+
+  // cout << "Input file name: "; cin >> fileName;
+  for (int i = 0; i < storage.storageSize; i++) {
+    ofstream file(fileName, ios::app);
+
+    if (!file.is_open()) {
+      cout << "File can not be created" << endl;
+      return;
+    }
+
+    Student student = storage.storage[i];
+
+    for (int j = 0; j < student.storageSize; j++) {
+      KeyValue keyvalue = student.storage[j];
+      if (!(j == 0 || j == student.storageSize - 1)) {
+        file << ";";
+      }
+      file << keyvalue.value;
+    }
+
+    file << "\n";
+
+    file.close();
+  }
 }
 
 void fillMenu(Menu &menu) {
   appendMenuItem(menu, createMenuItem("Print all students", menu, printAllStudents));
   appendMenuItem(menu, createMenuItem("Append new student", menu, appendStudentFromKeyboard));
-  // appendMenuItem(menu, createMenuItem("Update student", menu, updateStudent));
-  // appendMenuItem(menu, createMenuItem("Delete student", menu,
-  // printAllStudents)); appendMenuItem(menu, createMenuItem("Load students from
-  // file", menu, printAllStudents)); appendMenuItem(menu,
+  appendMenuItem(menu, createMenuItem("Import database from file", menu, importDatabaseFromFile));
+  appendMenuItem(menu, createMenuItem("Update student", menu, updateStudent));
+  appendMenuItem(menu, createMenuItem("Export database", menu, exportDatabaseToFile));
   // createMenuItem("Upload students to file", menu, printAllStudents));
 }
 
@@ -512,14 +716,15 @@ void userEventLisenter(Menu menu, Storage &storage) {
 //   cout << "T: Storage size: " << storage.storageSize << endl;
 //   for (int i = 0; i < storage.storageSize; i++) {
 //     for (int j = 0; j < storage.storage[i].storageSize; j++) {
-//       cout << "Key: " << storage.storage[i].storage[j].key << " " << getFuildInfo(storage.storage[i].storage[i].key).name << " : " << storage.storage[i].storage[j].value << endl;
+//       cout << "Key: " << storage.storage[i].storage[j].key << " " <<
+//       getFuildInfo(storage.storage[i].storage[i].key).name << " : " <<
+//       storage.storage[i].storage[j].value << endl;
 //     }
 //     cout << "================" << endl;
 //   }
 //
 //   cout << "Test passed" << endl;
 // }
-
 
 int main() {
   Storage storage = createNewStorage();
