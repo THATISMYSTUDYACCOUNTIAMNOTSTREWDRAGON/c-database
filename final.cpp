@@ -74,7 +74,7 @@ enum Fuild {
   Mark3,
 };
 
-enum FuildType { Id, INT, STRING, DATE, COURSE, MARK };
+enum FuildType { Id, INT, STRING, DATE, COURSE, MARK, NONE };
 
 struct Course {
   int course;
@@ -163,7 +163,7 @@ FuildInfo getFuildInfo(Fuild v) {
     fuildInfo = {"Оценка 3", "Оценка 3: ", FuildType::MARK};
     break;
   default:
-    fuildInfo = {"[Unknown]", FuildType::STRING};
+    fuildInfo = {"[Unknown]", FuildType::NONE};
     break;
   }
   return fuildInfo;
@@ -447,6 +447,12 @@ void appendMenuItem(Menu &menu, MenuItem menuItem) {
   menu.storageSize = newStorageSize;
 }
 
+void printStudent(Student student) {
+  for (int j = 0; j <= Fuild::Mark3; j++) {
+    cout << j << " " << student.storage[j].value << endl;
+  }
+}
+
 void printAllStudents(Storage storage) {
 
   if (storage.storageSize == 0) {
@@ -454,9 +460,7 @@ void printAllStudents(Storage storage) {
   }
 
   for (int i = 0; i < storage.storageSize; i++) {
-    for (int j = 0; j <= Fuild::Mark3; j++) {
-      cout << j << " " << storage.storage[i].storage[j].value << endl;
-    }
+    printStudent(storage.storage[i]);
   }
 }
 
@@ -507,6 +511,42 @@ void deleteStudent(Storage &storage) {
   cin >> id;
 
   int elements_to_move = storage.storageSize - id - 1;
+}
+
+void findStudent(Storage &storage) {
+  int fuildID = Fuild::ID;
+
+  for (int i = 0; i <= Fuild::Mark3; i++) {
+    FuildInfo fuildInfo = getFuildInfo((Fuild)i);
+    cout << i << " " << fuildInfo.name << endl;
+  }
+
+  cout << endl;
+
+  cout << "Input fuild id you wanna find: ";
+  cin >> fuildID;
+
+  FuildInfo fuildInfo = getFuildInfo((Fuild)fuildID);
+
+  if (fuildInfo.fuildType == FuildType::NONE) {
+    cout << "Вы ввели неправильное поле! " << endl;
+    findStudent(storage);
+  }
+
+  cout << "Ищем в поле " << fuildInfo.name << endl;
+  char substring[stringLength] = "";
+
+  cout << "Введите что хотели найти: ";
+  cin >> substring;
+
+  for (int i = 0; i < storage.storageSize; i++) {
+    Student student = storage.storage[i];
+
+    KeyValue keyvalue = student.storage[fuildID];
+    if (strstr(keyvalue.value, substring) != NULL) {
+      printStudent(student);
+    }
+  }
 }
 
 void importDatabaseFromFile(Storage &storage) {
@@ -566,7 +606,7 @@ void updateStudent(Storage &storage) {
 }
 
 void clearFile(char fileName[stringLength]) {
-  ofstream file(fileName); 
+  ofstream file(fileName);
   file << "";
   file.close();
 }
@@ -607,12 +647,17 @@ void exportDatabaseToFile(Storage &storage) {
 }
 
 void fillMenu(Menu &menu) {
-  appendMenuItem(menu, createMenuItem("Print all students", menu, printAllStudents));
-  appendMenuItem(menu, createMenuItem("Append new student", menu, appendStudentFromKeyboard));
-  appendMenuItem(menu, createMenuItem("Import database from file", menu, importDatabaseFromFile));
+  appendMenuItem(menu,
+                 createMenuItem("Print all students", menu, printAllStudents));
+  appendMenuItem(menu, createMenuItem("Append new student", menu,
+                                      appendStudentFromKeyboard));
+  appendMenuItem(menu, createMenuItem("Import database from file", menu,
+                                      importDatabaseFromFile));
   appendMenuItem(menu, createMenuItem("Update student", menu, updateStudent));
-  appendMenuItem(menu, createMenuItem("Export database", menu, exportDatabaseToFile));
-  // createMenuItem("Upload students to file", menu, printAllStudents));
+  appendMenuItem(menu,
+                 createMenuItem("Export database", menu, exportDatabaseToFile));
+  appendMenuItem(menu,
+                 createMenuItem("Find student", menu, findStudent));
 }
 
 void printMenu(Menu menu) {
