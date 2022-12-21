@@ -12,7 +12,7 @@ using namespace std;
 
 bool isYes() {
   char yes;
-  cin >> yes;
+  cout << "Y/n: "; cin >> yes;
   if (yes == 'y') {
     return true;
   }
@@ -61,8 +61,8 @@ char *itoa(int value, char *result, int base) {
 
 enum Fuild {
   ID,
-  Name,
   Sername,
+  Name,
   Patronical,
   Enterance_Date,
   Course,
@@ -312,7 +312,7 @@ void fillStudentWithKeybord(Storage &storage, Student &student) {
   itoa(storage.storageSize, keyvalue.value, 10);
   appendStudentFuild(student, keyvalue);
 
-  for (int i = Fuild::Name; i <= Fuild::Mark3; i++) {
+  for (int i = Fuild::Sername; i <= Fuild::Mark3; i++) {
     KeyValue keyvalue;
     keyvalue.key = (Fuild)i;
     FuildInfo fuildInfo = getFuildInfo((Fuild)i);
@@ -392,7 +392,7 @@ void appendStudent(Storage &storage, Student student) {
   storage.storageSize = newStorageSize;
 }
 
-Storage createNewStorage() {
+Storage initStorage() {
   Storage storage;
 
   storage.storageSize = 0;
@@ -447,21 +447,29 @@ void appendMenuItem(Menu &menu, MenuItem menuItem) {
   menu.storageSize = newStorageSize;
 }
 
+void printHeader() {
+
+}
+
 void printStudent(Student student) {
   for (int j = 0; j <= Fuild::Mark3; j++) {
     cout << j << " " << student.storage[j].value << endl;
   }
 }
 
-void printAllStudents(Storage storage) {
+void printStudents(Storage storage) {
+  for (int i = 0; i < storage.storageSize; i++) {
+    printStudent(storage.storage[i]);
+  }
+}
 
+void printGlobalStoreStudents(Storage storage) {
   if (storage.storageSize == 0) {
     cout << "There is no data for now" << endl;
   }
 
-  for (int i = 0; i < storage.storageSize; i++) {
-    printStudent(storage.storage[i]);
-  }
+  printStudents(storage);
+  cleanOrNot();
 }
 
 bool validateStudent(Student student) {
@@ -505,21 +513,33 @@ bool validateStudent(Student student) {
   return true;
 }
 
-void deleteStudent(Storage &storage) {
-  int id;
-  cout << "Please input user id: ";
-  cin >> id;
 
-  int elements_to_move = storage.storageSize - id - 1;
+Storage getStudentsBySubstring(Storage &storage, char substring[], Fuild fuildID) {
+  Storage foundedStudents = initStorage();
+
+  for (int i = 0; i < storage.storageSize; i++) {
+    Student student = storage.storage[i];
+    KeyValue keyvalue = student.storage[fuildID];
+    if (strstr(keyvalue.value, substring) != NULL) {
+      appendStudent(foundedStudents, student);
+    }
+  }
+
+  return foundedStudents;
 }
 
-void findStudent(Storage &storage) {
-  int fuildID = Fuild::ID;
-
-  for (int i = 0; i <= Fuild::Mark3; i++) {
+void printFuilds() {
+  for (int i = Fuild::ID; i <= Fuild::Mark3; i++) {
     FuildInfo fuildInfo = getFuildInfo((Fuild)i);
     cout << i << " " << fuildInfo.name << endl;
   }
+
+}
+
+Storage searchByFuilds(Storage &storage) {
+  int fuildID = Fuild::ID;
+
+  printFuilds();
 
   cout << endl;
 
@@ -530,7 +550,7 @@ void findStudent(Storage &storage) {
 
   if (fuildInfo.fuildType == FuildType::NONE) {
     cout << "Вы ввели неправильное поле! " << endl;
-    findStudent(storage);
+    searchByFuilds(storage);
   }
 
   cout << "Ищем в поле " << fuildInfo.name << endl;
@@ -539,23 +559,37 @@ void findStudent(Storage &storage) {
   cout << "Введите что хотели найти: ";
   cin >> substring;
 
-  for (int i = 0; i < storage.storageSize; i++) {
-    Student student = storage.storage[i];
+  Storage foundedStudents = getStudentsBySubstring(storage, substring, (Fuild)fuildID);
 
-    KeyValue keyvalue = student.storage[fuildID];
-    if (strstr(keyvalue.value, substring) != NULL) {
-      printStudent(student);
-    }
+  return foundedStudents;
+}
+
+void menuFindStudents(Storage &storage) {
+  Storage foundedStudents = searchByFuilds(storage);
+
+  if (foundedStudents.storageSize == 0) {
+    cout << "А ничего не найдено!" << endl;
+    return;
+  }
+
+  for (int i = 0; i < foundedStudents.storageSize; i++) {
+    Student student = foundedStudents.storage[i];
+    printStudent(student);
   }
 }
+
 
 void importDatabaseFromFile(Storage &storage) {
   ifstream file("./input.txt");
 
+  if (!file.is_open()) {
+    cout << "Нет такого файла либо каталога" << endl;
+  }
+
   char line[stringLength * 13] = "";
   char delim[] = ";";
 
-  Storage newStorage = createNewStorage();
+  Storage newStorage = initStorage();
 
   while (file.getline(line, stringLength * 13)) {
     char *ptr = strtok(line, delim);
@@ -579,6 +613,7 @@ void importDatabaseFromFile(Storage &storage) {
   }
 
   storage = newStorage;
+  cout << "Успешно" << endl;
 }
 
 void appendStudentFromKeyboard(Storage &storage) {
@@ -588,8 +623,7 @@ void appendStudentFromKeyboard(Storage &storage) {
 
 void updateStudent(Storage &storage) {
   int id;
-  cout << "Input user id to delete: ";
-  cin >> id;
+  cout << "Введите номер пользователя, которого хотет изменить: "; cin >> id;
 
   for (int i = 0; i < storage.storageSize; i++) {
     Student student = storage.storage[i];
@@ -646,18 +680,108 @@ void exportDatabaseToFile(Storage &storage) {
   }
 }
 
+void deleteElementFromStorage(Storage &storage, int index) {
+  int newStorageSize = storage.storageSize - 1;
+
+  Student *newStorage = new Student[newStorageSize];
+
+  for (int i = 0; i < storage.storageSize; i++) {
+    if (i == index) {
+      continue;
+    }
+    newStorage[i] = storage.storage[i];
+  }
+
+  delete[] storage.storage;
+
+  storage.storage = newStorage;
+
+  newStorage = NULL;
+
+  storage.storageSize = newStorageSize;
+}
+
+void deleteStudent(Storage &storage) {
+  Storage foundedStudents = searchByFuilds(storage);
+
+  if (foundedStudents.storageSize == 0){
+    cout << "Ничего не найдено" << endl;
+    return;
+  }
+
+  for (int i = 0; i < foundedStudents.storageSize; i++) {
+    Student student = foundedStudents.storage[i];
+    cout << i << " ";
+    printStudent(student);
+  }
+
+  cout << "Хотите удалить все результаты?" << endl;
+
+
+  if (isYes()) {
+    for (int i = 0; i < storage.storageSize; i++) {
+      Student globalStudent = storage.storage[i];
+      for (int j = 0; j < foundedStudents.storageSize; j++) {
+        Student localStudent = foundedStudents.storage[j];
+        if (globalStudent.storage[Fuild::ID].value == localStudent.storage[Fuild::ID].value) {
+          deleteElementFromStorage(storage, i); 
+        }
+      }
+    }
+    return;
+  }
+
+  cout << "Укажите каких пользователей вы хотите удалить(1,2,3,4)" << endl;
+}
+
+Storage getChosenStudents(Storage storage) {
+  Storage chosenStudents = initStorage(); 
+
+  for (int i = 0; i < storage.storageSize; i++) {
+    Student student = storage.storage[i];
+
+    if
+      (
+        (
+          strcmp(student.storage[Fuild::Mark1].value, "4") == 0 &&
+          strcmp(student.storage[Fuild::Mark2].value, "4") != 0 &&
+          strcmp(student.storage[Fuild::Mark3].value, "4") != 0
+        )
+        ||
+        (
+          strcmp(student.storage[Fuild::Mark1].value, "4") != 0 &&
+          strcmp(student.storage[Fuild::Mark2].value, "4") == 0 &&
+          strcmp(student.storage[Fuild::Mark3].value, "4") != 0 
+        )
+        ||
+        (
+          strcmp(student.storage[Fuild::Mark1].value, "4") != 0 &&
+          strcmp(student.storage[Fuild::Mark2].value, "4") != 0 &&
+          strcmp(student.storage[Fuild::Mark3].value, "4") == 0 
+        )
+      )
+    {
+      appendStudent(chosenStudents, student);
+    }
+  }
+
+  return chosenStudents;
+}
+
+void printChosenStudents(Storage storage) {
+  printStudents(getChosenStudents(storage));
+  cleanOrNot();
+}
+
 void fillMenu(Menu &menu) {
-  appendMenuItem(menu,
-                 createMenuItem("Print all students", menu, printAllStudents));
-  appendMenuItem(menu, createMenuItem("Append new student", menu,
-                                      appendStudentFromKeyboard));
-  appendMenuItem(menu, createMenuItem("Import database from file", menu,
-                                      importDatabaseFromFile));
-  appendMenuItem(menu, createMenuItem("Update student", menu, updateStudent));
-  appendMenuItem(menu,
-                 createMenuItem("Export database", menu, exportDatabaseToFile));
-  appendMenuItem(menu,
-                 createMenuItem("Find student", menu, findStudent));
+  appendMenuItem(menu, createMenuItem("Показать всех студентов", menu, printGlobalStoreStudents));
+  appendMenuItem(menu, createMenuItem("Добавить снудента", menu, appendStudentFromKeyboard));
+  appendMenuItem(menu, createMenuItem("Изменить студента", menu, updateStudent));
+  appendMenuItem(menu, createMenuItem("Удалить студента", menu, deleteStudent));
+  appendMenuItem(menu, createMenuItem("Поиск по полям", menu, menuFindStudents));
+  appendMenuItem(menu, createMenuItem("Экспортировать базу данных", menu, exportDatabaseToFile));
+  appendMenuItem(menu, createMenuItem("Импортировать базу данных", menu, importDatabaseFromFile));
+  appendMenuItem(menu, createMenuItem("Показать избранных студентов", menu, printChosenStudents));
 }
 
 void printMenu(Menu menu) {
@@ -668,6 +792,7 @@ void printMenu(Menu menu) {
 
 void userEventLisenter(Menu menu, Storage &storage) {
 
+  printMenu(menu);
   int command;
   cout << "Please input command: ";
   cin >> command;
@@ -772,10 +897,9 @@ void userEventLisenter(Menu menu, Storage &storage) {
 // }
 
 int main() {
-  Storage storage = createNewStorage();
+  Storage storage = initStorage();
   Menu menu = createMenu();
   fillMenu(menu);
-  printMenu(menu);
   userEventLisenter(menu, storage);
 
   return 0;
