@@ -576,6 +576,8 @@ void menuFindStudents(Storage &storage) {
     Student student = foundedStudents.storage[i];
     printStudent(student);
   }
+
+  cleanOrNot();
 }
 
 
@@ -614,11 +616,13 @@ void importDatabaseFromFile(Storage &storage) {
 
   storage = newStorage;
   cout << "Успешно" << endl;
+  cleanOrNot();
 }
 
 void appendStudentFromKeyboard(Storage &storage) {
   Student student = createNewStudentFromKeyboard(storage);
   appendStudent(storage, student);
+  cleanOrNot();
 }
 
 void updateStudent(Storage &storage) {
@@ -637,6 +641,8 @@ void updateStudent(Storage &storage) {
       }
     }
   }
+
+  cleanOrNot();
 }
 
 void clearFile(char fileName[stringLength]) {
@@ -678,6 +684,8 @@ void exportDatabaseToFile(Storage &storage) {
 
     file.close();
   }
+
+  cleanOrNot();
 }
 
 void deleteElementFromStorage(Storage &storage, int index) {
@@ -706,6 +714,7 @@ void deleteStudent(Storage &storage) {
 
   if (foundedStudents.storageSize == 0){
     cout << "Ничего не найдено" << endl;
+    cleanOrNot();
     return;
   }
 
@@ -717,7 +726,6 @@ void deleteStudent(Storage &storage) {
 
   cout << "Хотите удалить все результаты?" << endl;
 
-
   if (isYes()) {
     for (int i = 0; i < storage.storageSize; i++) {
       Student globalStudent = storage.storage[i];
@@ -728,10 +736,29 @@ void deleteStudent(Storage &storage) {
         }
       }
     }
+    cleanOrNot();
     return;
   }
 
-  cout << "Укажите каких пользователей вы хотите удалить(1,2,3,4)" << endl;
+  char studentsToDelete[stringLength] = "";
+  cout << "Укажите каких пользователей вы хотите удалить(1,2,3,4)"; cin >> studentsToDelete;
+
+  char token = ',';
+  char *ptr = strtok(studentsToDelete, &token);
+
+  while(ptr) {
+    if (isInt(ptr)) {
+      for (int i = 0; i < foundedStudents.storageSize; i++) {
+        Student student = foundedStudents.storage[i];
+        if (strcmp(student.storage[Fuild::ID].value, ptr) == 0) {
+          deleteElementFromStorage(storage, atoi(ptr)); 
+        }
+      }
+    }
+    ptr = strtok(nullptr, &token);
+  }
+
+  cleanOrNot();
 }
 
 Storage getChosenStudents(Storage storage) {
@@ -775,7 +802,7 @@ void printChosenStudents(Storage storage) {
 
 void fillMenu(Menu &menu) {
   appendMenuItem(menu, createMenuItem("Показать всех студентов", menu, printGlobalStoreStudents));
-  appendMenuItem(menu, createMenuItem("Добавить снудента", menu, appendStudentFromKeyboard));
+  appendMenuItem(menu, createMenuItem("Добавить студента", menu, appendStudentFromKeyboard));
   appendMenuItem(menu, createMenuItem("Изменить студента", menu, updateStudent));
   appendMenuItem(menu, createMenuItem("Удалить студента", menu, deleteStudent));
   appendMenuItem(menu, createMenuItem("Поиск по полям", menu, menuFindStudents));
