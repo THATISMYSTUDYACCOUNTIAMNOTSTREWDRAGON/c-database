@@ -1,13 +1,13 @@
 #include <cstring>
-#include <locale.h>
-#include <stdlib.h>
-#include <wchar.h>
 #include <fstream>
 #include <functional>
 #include <iomanip>
 #include <iostream>
 #include <limits>
+#include <locale.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <wchar.h>
 
 const int stringLength = 255;
 
@@ -15,7 +15,8 @@ using namespace std;
 
 bool isYes() {
   char yes;
-  cout << "Y/n: "; cin >> yes;
+  cout << "Y/n: ";
+  cin >> yes;
   if (yes == 'y') {
     return true;
   }
@@ -450,9 +451,7 @@ void appendMenuItem(Menu &menu, MenuItem menuItem) {
   menu.storageSize = newStorageSize;
 }
 
-void printHeader() {
-
-}
+void printHeader() {}
 
 void printStudent(Student student) {
   for (int j = 0; j <= Fuild::Mark3; j++) {
@@ -516,8 +515,8 @@ bool validateStudent(Student student) {
   return true;
 }
 
-
-Storage getStudentsBySubstring(Storage &storage, char substring[], Fuild fuildID) {
+Storage getStudentsBySubstring(Storage &storage, char substring[],
+                               Fuild fuildID) {
   Storage foundedStudents = initStorage();
 
   for (int i = 0; i < storage.storageSize; i++) {
@@ -536,7 +535,6 @@ void printFuilds() {
     FuildInfo fuildInfo = getFuildInfo((Fuild)i);
     cout << i << " " << fuildInfo.name << endl;
   }
-
 }
 
 Storage searchByFuilds(Storage &storage) {
@@ -562,7 +560,8 @@ Storage searchByFuilds(Storage &storage) {
   cout << "Введите что хотели найти: ";
   cin >> substring;
 
-  Storage foundedStudents = getStudentsBySubstring(storage, substring, (Fuild)fuildID);
+  Storage foundedStudents =
+      getStudentsBySubstring(storage, substring, (Fuild)fuildID);
 
   return foundedStudents;
 }
@@ -582,7 +581,6 @@ void menuFindStudents(Storage &storage) {
 
   cleanOrNot();
 }
-
 
 void importDatabaseFromFile(Storage &storage) {
   ifstream file("./input.txt");
@@ -640,11 +638,11 @@ void updateStudent(Storage &storage) {
 
   for (int i = 0; i < foundedStudents.storageSize; i++) {
     Student student = foundedStudents.storage[i];
-    cout << i << " "; 
-    printStudent(student); 
+    cout << i << " ";
+    printStudent(student);
   }
 
-  cout << "Какого пользователя вы хотите изменить?: "; 
+  cout << "Какого пользователя вы хотите изменить?: ";
   int indexToUpdate;
   fillStudentFuild(indexToUpdate);
 
@@ -652,7 +650,9 @@ void updateStudent(Storage &storage) {
     Student globalStudent = storage.storage[i];
     for (int j = 0; j < foundedStudents.storageSize; j++) {
       Student localStudent = foundedStudents.storage[j];
-      if (globalStudent.storage[Fuild::ID].value == localStudent.storage[Fuild::ID].value && j == indexToUpdate) {
+      if (globalStudent.storage[Fuild::ID].value ==
+              localStudent.storage[Fuild::ID].value &&
+          j == indexToUpdate) {
         updateSingleStudent(localStudent, storage);
       }
       storage.storage[i] = localStudent;
@@ -741,10 +741,59 @@ void deleteElementFromStorage(Storage &storage, int index) {
   storage.storageSize = newStorageSize;
 }
 
+void exportToBinaryFile(Storage &storage) {
+  ofstream file("input.bin", ios::out | ios::binary);
+  if (!file.is_open()) {
+    cout << "Ошибки при открытии файла" << endl;
+    return;
+  }
+  // записываем сколько студентов
+  file.write((char *)&storage.storageSize, sizeof(storage.storageSize));
+  for (int i = 0; i < storage.storageSize; i++) {
+    Student student = storage.storage[i];
+    // записываем сколько полей у студентов
+    file.write((char *)&student.storageSize, sizeof(student.storageSize));
+    for (int j = 0; j < student.storageSize; j++) {
+      file.write((char *)&student.storage[j], sizeof(KeyValue));
+    }
+  }
+  file.close();
+  if (!file.good()) {
+    cout << "Error occurred at writing time!" << endl;
+    return;
+  }
+  cout << "Успешно" << endl;
+  cleanOrNot();
+}
+
+void importFromBinaryFile(Storage &storage) {
+
+  Storage newStorage = initStorage();
+
+  ifstream file("input.bin", ios::out | ios::binary);
+
+  file.read((char *)&newStorage.storageSize, sizeof(newStorage.storageSize));
+  newStorage.storage = new Student[newStorage.storageSize];
+  for (int i = 0; i < newStorage.storageSize; i++) {
+    Student student;
+    file.read((char *)&student.storageSize, sizeof(student.storageSize));
+    student.storage = new KeyValue[student.storageSize];
+    for (int j = 0; j < student.storageSize; j++) {
+      file.read((char *)&student.storage[j], sizeof(KeyValue));
+      cout << student.storage[j].value << endl;
+    }
+    newStorage.storage[i] = student;
+  }
+
+  storage = newStorage;
+
+  cleanOrNot();
+}
+
 void deleteStudent(Storage &storage) {
   Storage foundedStudents = searchByFuilds(storage);
 
-  if (foundedStudents.storageSize == 0){
+  if (foundedStudents.storageSize == 0) {
     cout << "Ничего не найдено" << endl;
     cleanOrNot();
     return;
@@ -763,8 +812,9 @@ void deleteStudent(Storage &storage) {
       Student globalStudent = storage.storage[i];
       for (int j = 0; j < foundedStudents.storageSize; j++) {
         Student localStudent = foundedStudents.storage[j];
-        if (globalStudent.storage[Fuild::ID].value == localStudent.storage[Fuild::ID].value) {
-          deleteElementFromStorage(storage, i); 
+        if (globalStudent.storage[Fuild::ID].value ==
+            localStudent.storage[Fuild::ID].value) {
+          deleteElementFromStorage(storage, i);
         }
       }
     }
@@ -773,19 +823,22 @@ void deleteStudent(Storage &storage) {
   }
 
   char studentsToDelete[stringLength] = "";
-  cout << "Укажите каких пользователей вы хотите удалить(1,2,3,4): "; cin >> studentsToDelete;
+  cout << "Укажите каких пользователей вы хотите удалить(1,2,3,4): ";
+  cin >> studentsToDelete;
 
   char token = ',';
   char *ptr = strtok(studentsToDelete, &token);
 
-  while(ptr) {
+  while (ptr) {
     if (isInt(ptr)) {
       for (int i = 0; i < storage.storageSize; i++) {
         Student globalStudent = storage.storage[i];
         for (int j = 0; j < foundedStudents.storageSize; j++) {
           Student localStudent = foundedStudents.storage[j];
-          if (globalStudent.storage[Fuild::ID].value == localStudent.storage[Fuild::ID].value && j == atoi(ptr)) {
-            deleteElementFromStorage(storage, i); 
+          if (globalStudent.storage[Fuild::ID].value ==
+                  localStudent.storage[Fuild::ID].value &&
+              j == atoi(ptr)) {
+            deleteElementFromStorage(storage, i);
           }
         }
       }
@@ -797,32 +850,20 @@ void deleteStudent(Storage &storage) {
 }
 
 Storage getChosenStudents(Storage storage) {
-  Storage chosenStudents = initStorage(); 
+  Storage chosenStudents = initStorage();
 
   for (int i = 0; i < storage.storageSize; i++) {
     Student student = storage.storage[i];
 
-    if
-      (
-        (
-          strcmp(student.storage[Fuild::Mark1].value, "4") == 0 &&
-          strcmp(student.storage[Fuild::Mark2].value, "4") != 0 &&
-          strcmp(student.storage[Fuild::Mark3].value, "4") != 0
-        )
-        ||
-        (
-          strcmp(student.storage[Fuild::Mark1].value, "4") != 0 &&
-          strcmp(student.storage[Fuild::Mark2].value, "4") == 0 &&
-          strcmp(student.storage[Fuild::Mark3].value, "4") != 0 
-        )
-        ||
-        (
-          strcmp(student.storage[Fuild::Mark1].value, "4") != 0 &&
-          strcmp(student.storage[Fuild::Mark2].value, "4") != 0 &&
-          strcmp(student.storage[Fuild::Mark3].value, "4") == 0 
-        )
-      )
-    {
+    if ((strcmp(student.storage[Fuild::Mark1].value, "4") == 0 &&
+         strcmp(student.storage[Fuild::Mark2].value, "4") != 0 &&
+         strcmp(student.storage[Fuild::Mark3].value, "4") != 0) ||
+        (strcmp(student.storage[Fuild::Mark1].value, "4") != 0 &&
+         strcmp(student.storage[Fuild::Mark2].value, "4") == 0 &&
+         strcmp(student.storage[Fuild::Mark3].value, "4") != 0) ||
+        (strcmp(student.storage[Fuild::Mark1].value, "4") != 0 &&
+         strcmp(student.storage[Fuild::Mark2].value, "4") != 0 &&
+         strcmp(student.storage[Fuild::Mark3].value, "4") == 0)) {
       appendStudent(chosenStudents, student);
     }
   }
@@ -861,9 +902,11 @@ void sortStudents(Storage &storage) {
       KeyValue currentKeyvalue = storage.storage[j].storage[fuildID];
       KeyValue nextKeyvalue = storage.storage[j + 1].storage[fuildID];
 
-      cout << (char)currentKeyvalue.value[0] << " " << (char)nextKeyvalue.value[0] << endl;
+      cout << (char)currentKeyvalue.value[0] << " "
+           << (char)nextKeyvalue.value[0] << endl;
       if ((char)currentKeyvalue.value[0] > (char)nextKeyvalue.value[0]) {
-        cout << currentKeyvalue.value[0] << " " << nextKeyvalue.value[0] << endl;
+        cout << currentKeyvalue.value[0] << " " << nextKeyvalue.value[0]
+             << endl;
         temp = storage.storage[j];
         storage.storage[j] = storage.storage[j + 1];
         storage.storage[j + 1] = temp;
@@ -873,22 +916,32 @@ void sortStudents(Storage &storage) {
 
   cout << "Успешно" << endl;
 
-
   cleanOrNot();
 }
 
 void fillMenu(Menu &menu) {
-  appendMenuItem(menu, createMenuItem("Показать всех студентов", menu, printGlobalStoreStudents));
-  appendMenuItem(menu, createMenuItem("Добавить студента", menu, appendStudentFromKeyboard));
-  appendMenuItem(menu, createMenuItem("Изменить студента", menu, updateStudent));
+  appendMenuItem(menu, createMenuItem("Показать всех студентов", menu,
+                                      printGlobalStoreStudents));
+  appendMenuItem(menu, createMenuItem("Добавить студента", menu,
+                                      appendStudentFromKeyboard));
+  appendMenuItem(menu,
+                 createMenuItem("Изменить студента", menu, updateStudent));
   appendMenuItem(menu, createMenuItem("Удалить студента", menu, deleteStudent));
-  appendMenuItem(menu, createMenuItem("Поиск по полям", menu, menuFindStudents));
+  appendMenuItem(menu,
+                 createMenuItem("Поиск по полям", menu, menuFindStudents));
   appendMenuItem(menu, createMenuItem("Сортировать", menu, sortStudents));
-  appendMenuItem(menu, createMenuItem("Экспортировать базу данных в текстовый документ", menu, exportDatabaseToFile));
-  appendMenuItem(menu, createMenuItem("Импортировать базу данных из текстового документа", menu, importDatabaseFromFile));
-  appendMenuItem(menu, createMenuItem("Экспортировать базу данных в бинарник", menu, exportDatabaseToFile));
-  appendMenuItem(menu, createMenuItem("Импортировать базу данных из бинарника", menu, exportDatabaseToFile));
-  appendMenuItem(menu, createMenuItem("Показать избранных студентов", menu, printChosenStudents));
+  appendMenuItem(
+      menu, createMenuItem("Экспортировать базу данных в текстовый документ",
+                           menu, exportDatabaseToFile));
+  appendMenuItem(
+      menu, createMenuItem("Импортировать базу данных из текстового документа",
+                           menu, importDatabaseFromFile));
+  appendMenuItem(menu, createMenuItem("Экспортировать базу данных в бинарник",
+                                      menu, exportToBinaryFile));
+  appendMenuItem(menu, createMenuItem("Импортировать базу данных из бинарника",
+                                      menu, importFromBinaryFile));
+  appendMenuItem(menu, createMenuItem("Показать избранных студентов", menu,
+                                      printChosenStudents));
 }
 
 void printMenu(Menu menu) {
@@ -929,7 +982,7 @@ int main() {
   Storage storage = initStorage();
   Menu menu = createMenu();
   fillMenu(menu);
-  importDatabaseFromFile(storage);
+  // importDatabaseFromFile(storage);
   userEventLisenter(menu, storage);
 
   return 0;
