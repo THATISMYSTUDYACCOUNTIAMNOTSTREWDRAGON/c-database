@@ -10,6 +10,7 @@
 #include <wchar.h>
 
 const int stringLength = 255;
+const int WIDTH = 14;
 
 using namespace std;
 
@@ -487,12 +488,16 @@ void appendMenuItem(Menu &menu, MenuItem menuItem) {
   menu.storageSize = newStorageSize;
 }
 
-void printHeader() {}
+void printHeader() {
+
+}
 
 void printStudent(Student student) {
+  cout << "|";
   for (int j = 0; j <= Fuild::Mark3; j++) {
-    cout << j << " " << student.storage[j].value << endl;
+    cout << setw(WIDTH) << student.storage[j].value << "|";
   }
+  cout << '\n';
 }
 
 void printStudents(Storage storage) {
@@ -978,6 +983,27 @@ void sortStudents(Storage &storage) {
   cleanOrNot();
 }
 
+void syncAll(Storage &storage) {
+  exportDatabaseToFile(storage);
+  exportToBinaryFile(storage);
+}
+
+void convertTextToBinary(Storage &storage) {
+  Storage newStorage = initStorage();
+  importDatabaseFromFile(newStorage);
+  exportToBinaryFile(newStorage);
+}
+
+void quit(Storage &storage) {
+  if (storage.storageSize != 0) {
+    cout << "Хотите сохранить текущее состояние бд?" << endl;
+    if(isYes()) {
+      syncAll(storage);  
+    } 
+  }
+  exit(0);
+}
+
 void fillMenu(Menu &menu) {
   appendMenuItem(menu, createMenuItem("Показать всех студентов", menu,
                                       printGlobalStoreStudents));
@@ -1001,6 +1027,8 @@ void fillMenu(Menu &menu) {
                                       menu, importFromBinaryFile));
   appendMenuItem(menu, createMenuItem("Показать избранных студентов", menu,
                                       printChosenStudents));
+  appendMenuItem(menu, createMenuItem("Конвертировать тектовый файл в бинарник", menu, convertTextToBinary));
+  appendMenuItem(menu, createMenuItem("Выйти", menu, quit));
 }
 
 void printMenu(Menu menu) {
