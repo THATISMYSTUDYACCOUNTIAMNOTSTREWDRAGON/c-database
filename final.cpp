@@ -150,37 +150,37 @@ FuildInfo getFuildInfo(Fuild v) {
     fuildInfo = {"ID", "ID : ", FuildType::Id};
     break;
   case Sername:
-    fuildInfo = {"Фамилия", "Фамилия: ", FuildType::STRING};
+    fuildInfo = {"Sernam", "Фамилия: ", FuildType::STRING};
     break;
   case Name:
-    fuildInfo = {"Имя", "Имя: ", FuildType::STRING};
+    fuildInfo = {"Name", "Имя: ", FuildType::STRING};
     break;
   case Patronical:
-    fuildInfo = {"Отчество", "Отчество: ", FuildType::STRING};
+    fuildInfo = {"Patronical", "Отчество: ", FuildType::STRING};
     break;
   case Enterance_Date:
-    fuildInfo = {"Дата поступления", "Дата поступления", FuildType::DATE};
+    fuildInfo = {"Enterance date", "Дата поступления", FuildType::DATE};
     break;
   case Course:
-    fuildInfo = {"Курс", "Курс: ", FuildType::COURSE};
+    fuildInfo = {"Course", "Курс: ", FuildType::COURSE};
     break;
   case Subject1:
-    fuildInfo = {"Предемет 1", "Предмет 1: ", FuildType::STRING};
+    fuildInfo = {"Sub 1", "Предмет 1: ", FuildType::STRING};
     break;
   case Mark1:
-    fuildInfo = {"Оценка 1", "Оценка по предмету 1: ", FuildType::MARK};
+    fuildInfo = {"Mark 1", "Оценка по предмету 1: ", FuildType::MARK};
     break;
   case Subject2:
-    fuildInfo = {"Предмет 2", "Предмет 2: ", FuildType::STRING};
+    fuildInfo = {"Sub 2", "Предмет 2: ", FuildType::STRING};
     break;
   case Mark2:
-    fuildInfo = {"Оценка 2", "Оценка 2: ", FuildType::MARK};
+    fuildInfo = {"Mark 2", "Оценка 2: ", FuildType::MARK};
     break;
   case Subject3:
-    fuildInfo = {"Предмет 3", "Пердмет 3: ", FuildType::STRING};
+    fuildInfo = {"Sub 3", "Пердмет 3: ", FuildType::STRING};
     break;
   case Mark3:
-    fuildInfo = {"Оценка 3", "Оценка 3: ", FuildType::MARK};
+    fuildInfo = {"Mark 3", "Оценка 3: ", FuildType::MARK};
     break;
   default:
     fuildInfo = {"[Unknown]", FuildType::NONE};
@@ -488,8 +488,22 @@ void appendMenuItem(Menu &menu, MenuItem menuItem) {
   menu.storageSize = newStorageSize;
 }
 
-void printHeader() {
+void printDevider() {
+  for (int i = 0; i < 13 * WIDTH - 1; i++) {
+    cout << "-";
+  }
+  cout << '\n';
+}
 
+void printHeader() {
+  printDevider();
+  cout << "|";
+  for (int i = Fuild::ID; i <= Fuild::Mark3; i++) {
+    FuildInfo fuildInfo = getFuildInfo((Fuild)i);
+    cout << setw(WIDTH) << fuildInfo.name << "|";
+  }
+  cout << '\n';
+  printDevider();
 }
 
 void printStudent(Student student) {
@@ -498,9 +512,11 @@ void printStudent(Student student) {
     cout << setw(WIDTH) << student.storage[j].value << "|";
   }
   cout << '\n';
+  printDevider();
 }
 
 void printStudents(Storage storage) {
+  printHeader();
   for (int i = 0; i < storage.storageSize; i++) {
     printStudent(storage.storage[i]);
   }
@@ -509,6 +525,8 @@ void printStudents(Storage storage) {
 void printGlobalStoreStudents(Storage storage) {
   if (storage.storageSize == 0) {
     cout << "There is no data for now" << endl;
+    cleanOrNot();
+    return;
   }
 
   printStudents(storage);
@@ -699,7 +717,8 @@ void updateStudent(Storage &storage) {
 
   for (int i = 0; i < foundedStudents.storageSize; i++) {
     Student student = foundedStudents.storage[i];
-    cout << "Селектор: " << i << endl;
+    cout << "╭─Изменить: " << i << endl;
+    printDevider();
     printStudent(student);
   }
 
@@ -865,7 +884,8 @@ void deleteStudent(Storage &storage) {
 
   for (int i = 0; i < foundedStudents.storageSize; i++) {
     Student student = foundedStudents.storage[i];
-    cout << "Rem: " << i << " ";
+    cout << "╭─Удалить: " << i << endl;
+    printDevider();
     printStudent(student);
   }
 
