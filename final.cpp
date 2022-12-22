@@ -664,13 +664,14 @@ void appendStudentFromKeyboard(Storage &storage) {
     appendStudent(storage, student);
   } else {
     int position;
+    cout << "Введите подходящую позицию(max " << storage.storageSize << " ): "; cin >> position;
     Storage newStorage = initStorage();
     if (0 <= position && position <= storage.storageSize) {
       for (int i = 0; i < position; i++) {
         appendStudent(newStorage, storage.storage[i]);
       }
       appendStudent(newStorage, student);
-      for (int i = position + 1; i < storage.storageSize; i++) {
+      for (int i = position; i < storage.storageSize; i++) {
         appendStudent(newStorage, storage.storage[i]);
       }
     }
@@ -832,13 +833,14 @@ void importFromBinaryFile(Storage &storage) {
     student.storage = new KeyValue[student.storageSize];
     for (int j = 0; j < student.storageSize; j++) {
       file.read((char *)&student.storage[j], sizeof(KeyValue));
-      cout << student.storage[j].value << endl;
+      // cout << student.storage[j].value << endl;
     }
     newStorage.storage[i] = student;
   }
 
   storage = newStorage;
 
+  cout << "Успешно" << endl;
   cleanOrNot();
 }
 
