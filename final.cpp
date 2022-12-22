@@ -323,11 +323,29 @@ void fillStudentWithKeybord(Storage &storage, Student &student) {
 
     cout << fuildInfo.description;
 
+    char dateString[stringLength] = "";
+
     switch (fuildInfo.fuildType) {
     case (int)FuildType::DATE:
       Date date;
+      char day[stringLength];
+      char month[stringLength];
+      char year[stringLength];
+
       fillStudentFuild(date);
-      strcpy(keyvalue.value, "fuckkk");
+
+      itoa(date.day, day, 10);
+      itoa(date.month, month, 10);
+      itoa(date.year, year, 10);
+
+
+      strcat(dateString, day);
+      strcat(dateString, ".");
+      strcat(dateString, month);
+      strcat(dateString, ".");
+      strcat(dateString, year);
+
+      strcpy(keyvalue.value, dateString);
       break;
     case (int)FuildType::MARK:
       Mark mark;
@@ -337,7 +355,6 @@ void fillStudentWithKeybord(Storage &storage, Student &student) {
     case (int)FuildType::COURSE:
       struct Course course;
       fillStudentFuild(course);
-      cout << course.course << endl;
       itoa(course.course, keyvalue.value, 10);
       break;
     case (int)FuildType::STRING:
