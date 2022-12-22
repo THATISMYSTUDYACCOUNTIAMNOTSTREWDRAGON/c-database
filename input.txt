@@ -1,0 +1,5 @@
+1;Moryakov;Vladislav;Yurievich;11.01.2022;1;Math;5;Phys;5;Gyomentry;5
+2;Balin;Vladislav;Yurievich;11.01.2022;1;Math;5;Phys;5;Gyomentry;5
+3;Zinoview;Sergei;Ivanovich;11.01.2022;1;Math;5;Phys;5;Gyomentry;4
+4;Tkachenko;Nikolay;Kehrimanovich;11.01.2022;1;Math;5;Phys;5;Gyomentry;5
+5;Oliga;Vladimirovna;Abgdeezh;11.01.2022;1;Math;5;Phys;5;Gyomentry;5
