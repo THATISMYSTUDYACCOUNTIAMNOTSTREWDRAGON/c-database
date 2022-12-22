@@ -13,10 +13,11 @@ const int stringLength = 255;
 
 using namespace std;
 
-char *getFileName(const char *defaultFileName) { 
-  char *fileName = (char*)malloc(stringLength * sizeof(char));
+char *getFileName(const char *defaultFileName) {
+  char *fileName = (char *)malloc(stringLength * sizeof(char));
 
-  cout << "Введить имя файла(по умолчанию " << defaultFileName << ")" << " : ";
+  cout << "Введить имя файла(по умолчанию " << defaultFileName << ")"
+       << " : ";
   cin.ignore();
   cin.getline(fileName, stringLength);
 
@@ -335,8 +336,9 @@ void fillStudentWithKeybord(Storage &storage, Student &student) {
     keyvalue.key = (Fuild)i;
     FuildInfo fuildInfo = getFuildInfo((Fuild)i);
 
-    if (Fuild::Sername == (Fuild)i || Fuild::Subject1 == (Fuild)i || Fuild::Subject2 == (Fuild)i || Fuild::Subject3 == (Fuild)i) {
-      cin.ignore(); 
+    if (Fuild::Sername == (Fuild)i || Fuild::Subject1 == (Fuild)i ||
+        Fuild::Subject2 == (Fuild)i || Fuild::Subject3 == (Fuild)i) {
+      cin.ignore();
     }
 
     cout << fuildInfo.description;
@@ -390,8 +392,6 @@ void fillStudentWithKeybord(Storage &storage, Student &student) {
     }
 
     appendStudentFuild(student, keyvalue);
-
-
   }
 }
 
@@ -664,7 +664,8 @@ void appendStudentFromKeyboard(Storage &storage) {
     appendStudent(storage, student);
   } else {
     int position;
-    cout << "Введите подходящую позицию(max " << storage.storageSize << " ): "; cin >> position;
+    cout << "Введите подходящую позицию(max " << storage.storageSize << " ): ";
+    cin >> position;
     Storage newStorage = initStorage();
     if (0 <= position && position <= storage.storageSize) {
       for (int i = 0; i < position; i++) {
@@ -677,7 +678,7 @@ void appendStudentFromKeyboard(Storage &storage) {
     }
     storage = newStorage;
   }
-  
+
   cleanOrNot();
 }
 
@@ -693,7 +694,7 @@ void updateStudent(Storage &storage) {
 
   for (int i = 0; i < foundedStudents.storageSize; i++) {
     Student student = foundedStudents.storage[i];
-    cout << i << " ";
+    cout << "Селектор: " << i << endl;
     printStudent(student);
   }
 
@@ -701,31 +702,30 @@ void updateStudent(Storage &storage) {
   int indexToUpdate;
   fillStudentFuild(indexToUpdate);
 
+  cout << "Хотите изменить пользователя полностью?" << endl;
+
+  bool updateFull = isYes();
+
+
   for (int i = 0; i < storage.storageSize; i++) {
     Student globalStudent = storage.storage[i];
     for (int j = 0; j < foundedStudents.storageSize; j++) {
       Student localStudent = foundedStudents.storage[j];
-      if (globalStudent.storage[Fuild::ID].value ==
-              localStudent.storage[Fuild::ID].value &&
-          j == indexToUpdate) {
-        updateSingleStudent(localStudent, storage);
+      if (globalStudent.storage[Fuild::ID].value == localStudent.storage[Fuild::ID].value && j == indexToUpdate) {
+        if (updateFull) {
+          updateSingleStudent(localStudent, storage);
+        } else {
+          int fuildID;
+          cout << "Введите поле которое хотите изменить: ";
+          fillStudentFuild(fuildID);
+          cout << "Введить новое значение поля: ";
+          cin.ignore();
+          fillStudentFuild(localStudent.storage[fuildID].value);
+        }
       }
       storage.storage[i] = localStudent;
     }
   }
-
-  // for (int i = 0; i < storage.storageSize; i++) {
-  //   Student student = storage.storage[i];
-  //   Fuild currentID = student.storage[0].key;
-  //   if ((int)currentID == (int)id) {
-  //     cout << "Пользователь найден" << endl;
-  //     cout << "Хотите заменить запись полностью?" << endl;
-  //     if (isYes()) {
-  //       Student newStudent = createNewStudentFromKeyboard(storage);
-  //       storage.storage[i] = newStudent;
-  //     }
-  //   }
-  // }
 
   cleanOrNot();
 }
@@ -824,6 +824,11 @@ void importFromBinaryFile(Storage &storage) {
   Storage newStorage = initStorage();
 
   ifstream file(getFileName("input.bin"), ios::out | ios::binary);
+
+  if (!file.is_open()) {
+    cout << "Нет такого файла или каталога" << endl;
+    return;
+  }
 
   file.read((char *)&newStorage.storageSize, sizeof(newStorage.storageSize));
   newStorage.storage = new Student[newStorage.storageSize];
