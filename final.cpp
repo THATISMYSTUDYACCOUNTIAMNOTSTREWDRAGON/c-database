@@ -254,8 +254,9 @@ void fillStudentFuild(int &fuild) {
   }
 }
 
-void fillStudentFuild(char (&fuild)[100]) {
-  cin >> fuild;
+void fillStudentFuild(char (&fuild)[stringLength]) {
+  cin.ignore();
+  cin.getline(fuild, stringLength);
   if (!isNormalInput()) {
     cout << " Введенное заначение должно быть "
             "строкой: ";
@@ -264,7 +265,7 @@ void fillStudentFuild(char (&fuild)[100]) {
 }
 
 void fillStudentFuild(Date &date) {
-  cout << endl;
+  cout << '\n';
   cout << "День : ";
   fillStudentFuild(date.day);
   cout << "Месяц : ";
@@ -324,6 +325,7 @@ void fillStudentWithKeybord(Storage &storage, Student &student) {
     cout << fuildInfo.description;
 
     char dateString[stringLength] = "";
+    char stringFuild[stringLength] = "";
 
     switch (fuildInfo.fuildType) {
     case (int)FuildType::DATE:
@@ -337,7 +339,6 @@ void fillStudentWithKeybord(Storage &storage, Student &student) {
       itoa(date.day, day, 10);
       itoa(date.month, month, 10);
       itoa(date.year, year, 10);
-
 
       strcat(dateString, day);
       strcat(dateString, ".");
@@ -358,7 +359,6 @@ void fillStudentWithKeybord(Storage &storage, Student &student) {
       itoa(course.course, keyvalue.value, 10);
       break;
     case (int)FuildType::STRING:
-      char stringFuild[100];
       fillStudentFuild(stringFuild);
       strcpy(keyvalue.value, stringFuild);
       break;
@@ -373,6 +373,8 @@ void fillStudentWithKeybord(Storage &storage, Student &student) {
     }
 
     appendStudentFuild(student, keyvalue);
+
+
   }
 }
 
