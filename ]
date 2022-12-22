@@ -710,13 +710,11 @@ void deleteElementFromStorage(Storage &storage, int index) {
 
   Student *newStorage = new Student[newStorageSize];
 
-  int newIndex = 0;
-  for (int i = 0; i < storage.storageSize; i++) {
+  for (int i, j = 0; i < storage.storageSize; i++, j++) {
     if (i == index) {
       continue;
     }
-    newStorage[newIndex] = storage.storage[i];
-    newIndex++;
+    newStorage[i] = storage.storage[i];
   }
 
   delete[] storage.storage;
