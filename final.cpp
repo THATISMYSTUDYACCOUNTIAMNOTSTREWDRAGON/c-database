@@ -269,7 +269,6 @@ void fillStudentFuild(int &fuild) {
 }
 
 void fillStudentFuild(char (&fuild)[stringLength]) {
-  cin.ignore();
   cin.getline(fuild, stringLength);
   if (!isNormalInput()) {
     cout << " Введенное заначение должно быть "
@@ -335,6 +334,10 @@ void fillStudentWithKeybord(Storage &storage, Student &student) {
     KeyValue keyvalue;
     keyvalue.key = (Fuild)i;
     FuildInfo fuildInfo = getFuildInfo((Fuild)i);
+
+    if (Fuild::Sername == (Fuild)i || Fuild::Subject1 == (Fuild)i || Fuild::Subject2 == (Fuild)i || Fuild::Subject3 == (Fuild)i) {
+      cin.ignore(); 
+    }
 
     cout << fuildInfo.description;
 
@@ -656,7 +659,24 @@ void importDatabaseFromFile(Storage &storage) {
 
 void appendStudentFromKeyboard(Storage &storage) {
   Student student = createNewStudentFromKeyboard(storage);
-  appendStudent(storage, student);
+  cout << "Хотите вставить пользователя в конец" << endl;
+  if (isYes()) {
+    appendStudent(storage, student);
+  } else {
+    int position;
+    Storage newStorage = initStorage();
+    if (0 <= position && position <= storage.storageSize) {
+      for (int i = 0; i < position; i++) {
+        appendStudent(newStorage, storage.storage[i]);
+      }
+      appendStudent(newStorage, student);
+      for (int i = position + 1; i < storage.storageSize; i++) {
+        appendStudent(newStorage, storage.storage[i]);
+      }
+    }
+    storage = newStorage;
+  }
+  
   cleanOrNot();
 }
 
