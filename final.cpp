@@ -13,6 +13,20 @@ const int stringLength = 255;
 
 using namespace std;
 
+char *getFileName(const char *defaultFileName) { 
+  char *fileName = (char*)malloc(stringLength * sizeof(char));
+
+  cout << "Введить имя файла(по умолчанию " << defaultFileName << ")" << " : ";
+  cin.ignore();
+  cin.getline(fileName, stringLength);
+
+  if (strcmp(fileName, "") == 0) {
+    strcpy(fileName, defaultFileName);
+  }
+
+  return fileName;
+}
+
 bool isYes() {
   char yes;
   cout << "Y/n: ";
@@ -602,10 +616,11 @@ void menuFindStudents(Storage &storage) {
 }
 
 void importDatabaseFromFile(Storage &storage) {
-  ifstream file("./input.txt");
+  ifstream file(getFileName("input.txt"));
 
   if (!file.is_open()) {
     cout << "Нет такого файла либо каталога" << endl;
+    return;
   }
 
   char line[stringLength * 13] = "";
@@ -708,11 +723,9 @@ void doClearFile(char fileName[stringLength]) {
 }
 
 void exportDatabaseToFile(Storage &storage) {
-  char fileName[stringLength] = "how_low.txt";
-
   // cout << "Input file name: "; cin >> fileName;
   for (int i = 0; i < storage.storageSize; i++) {
-    ofstream file(fileName, ios::app);
+    ofstream file(getFileName("output.txt"), ios::app);
 
     if (!file.is_open()) {
       cout << "File can not be created" << endl;
@@ -761,7 +774,7 @@ void deleteElementFromStorage(Storage &storage, int index) {
 }
 
 void exportToBinaryFile(Storage &storage) {
-  ofstream file("input.bin", ios::out | ios::binary);
+  ofstream file(getFileName("output.bin"), ios::out | ios::binary);
   if (!file.is_open()) {
     cout << "Ошибки при открытии файла" << endl;
     return;
@@ -789,7 +802,7 @@ void importFromBinaryFile(Storage &storage) {
 
   Storage newStorage = initStorage();
 
-  ifstream file("input.bin", ios::out | ios::binary);
+  ifstream file(getFileName("input.bin"), ios::out | ios::binary);
 
   file.read((char *)&newStorage.storageSize, sizeof(newStorage.storageSize));
   newStorage.storage = new Student[newStorage.storageSize];
