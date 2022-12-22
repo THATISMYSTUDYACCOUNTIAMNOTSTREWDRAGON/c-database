@@ -329,7 +329,18 @@ void fillStudentWithKeybord(Storage &storage, Student &student) {
   KeyValue keyvalue;
   keyvalue.key = Fuild::ID;
   FuildInfo fuildInfo = getFuildInfo(Fuild::ID);
-  itoa(storage.storageSize, keyvalue.value, 10);
+
+  int maxID = 0;
+  for (int i = 0; i < storage.storageSize; i++) {
+    Student tempStudent = storage.storage[i];
+    if (atoi(tempStudent.storage[Fuild::ID].value) > maxID) {
+      maxID = atoi(tempStudent.storage[Fuild::ID].value);
+    }
+  }
+
+  maxID += 1;
+
+  itoa(maxID, keyvalue.value, 10);
   appendStudentFuild(student, keyvalue);
 
   for (int i = Fuild::Sername; i <= Fuild::Mark3; i++) {
@@ -715,6 +726,12 @@ void updateSingleStudent(Student &student, Storage &storage) {
 void updateStudent(Storage &storage) {
   Storage foundedStudents = searchByFuilds(storage);
 
+  if (foundedStudents.storageSize == 0) {
+    cout << "Ничего не найдено!" <<endl;
+    cleanOrNot();
+    return;
+  }
+
   for (int i = 0; i < foundedStudents.storageSize; i++) {
     Student student = foundedStudents.storage[i];
     cout << "╭─Изменить: " << i << endl;
@@ -729,7 +746,6 @@ void updateStudent(Storage &storage) {
   cout << "Хотите изменить пользователя полностью?" << endl;
 
   bool updateFull = isYes();
-
 
   for (int i = 0; i < storage.storageSize; i++) {
     Student globalStudent = storage.storage[i];
