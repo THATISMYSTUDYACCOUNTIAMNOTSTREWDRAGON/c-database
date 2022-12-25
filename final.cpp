@@ -1063,7 +1063,7 @@ void fillMenu(Menu &menu) {
                                       menu, importFromBinaryFile));
   appendMenuItem(menu, createMenuItem("Показать избранных студентов", menu,
                                       printChosenStudents));
-  appendMenuItem(menu, createMenuItem("Конвертировать тектовый файл в бинарник", menu, convertTextToBinary));
+  appendMenuItem(menu, createMenuItem("Конвертировать текcтовый файл в бинарник", menu, convertTextToBinary));
   appendMenuItem(menu, createMenuItem("Выйти", menu, quit));
 }
 
@@ -1101,7 +1101,6 @@ void userEventLisenter(Menu menu, Storage &storage) {
 }
 
 int main() {
-
   Storage storage = initStorage();
   Menu menu = createMenu();
   fillMenu(menu);
