@@ -4,10 +4,8 @@
 #include <iomanip>
 #include <iostream>
 #include <limits>
-#include <locale.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <wchar.h>
+
+// ! hello
 
 const int stringLength = 255;
 const int WIDTH = 14;
@@ -337,6 +335,7 @@ void fillStudentWithKeybord(Storage &storage, Student &student) {
       maxID = atoi(tempStudent.storage[Fuild::ID].value);
     }
   }
+
 
   maxID += 1;
 

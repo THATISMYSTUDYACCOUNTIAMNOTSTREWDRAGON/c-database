@@ -1,0 +1,144 @@
+#!/bin/bash
+g++ $1 && ./a.out
+
+#include <cstring>
+#include <fstream>
+#include <iomanip>
+#include <iostream>
+#include <limits>
+
+strcmp(string, string): int ? 0 => true
+strcpy(to, from): void
+strlen(string): int
+strstr(string, substring) != NULL
+
+char *token = strtok(str, s);
+
+while(token != NULL) {
+  cout << token << endl;
+  token = strtok(NULL, s);
+}
+
+void importFromBinaryFile(Storage &storage) {
+
+  Storage newStorage = initStorage();
+
+  ifstream file(getFileName("input.bin"), ios::out | ios::binary);
+
+  if (!file.is_open()) {
+    cout << "Нет такого файла или каталога" << endl;
+    return;
+  }
+
+  file.read((char *)&newStorage.storageSize, sizeof(newStorage.storageSize));
+  newStorage.storage = new Student[newStorage.storageSize];
+  for (int i = 0; i < newStorage.storageSize; i++) {
+    Student student;
+    file.read((char *)&student.storageSize, sizeof(student.storageSize));
+    student.storage = new KeyValue[student.storageSize];
+    for (int j = 0; j < student.storageSize; j++) {
+      file.read((char *)&student.storage[j], sizeof(KeyValue));
+      // cout << student.storage[j].value << endl;
+    }
+    newStorage.storage[i] = student;
+  }
+
+  storage = newStorage;
+
+  cout << "Успешно" << endl;
+  cleanOrNot();
+}
+
+
+void exportToBinaryFile(Storage &storage) {
+  ofstream file(getFileName("output.bin"), ios::out | ios::binary);
+  if (!file.is_open()) {
+    cout << "Ошибки при открытии файла" << endl;
+    return;
+  }
+  // записываем сколько студентов
+  file.write((char *)&storage.storageSize, sizeof(storage.storageSize));
+  for (int i = 0; i < storage.storageSize; i++) {
+    Student student = storage.storage[i];
+    // записываем сколько полей у студентов
+    file.write((char *)&student.storageSize, sizeof(student.storageSize));
+    for (int j = 0; j < student.storageSize; j++) {
+      file.write((char *)&student.storage[j], sizeof(KeyValue));
+    }
+  }
+  file.close();
+  if (!file.good()) {
+    cout << "Error occurred at writing time!" << endl;
+    return;
+  }
+  cout << "Успешно" << endl;
+  cleanOrNot();
+}
+
+void exportDatabaseToFile(Storage &storage) {
+  // cout << "Input file name: "; cin >> fileName;
+  for (int i = 0; i < storage.storageSize; i++) {
+    ofstream file(getFileName("output.txt"), ios::app);
+
+    if (!file.is_open()) {
+      cout << "File can not be created" << endl;
+      return;
+    }
+
+    Student student = storage.storage[i];
+
+    for (int j = 0; j < student.storageSize; j++) {
+      KeyValue keyvalue = student.storage[j];
+      if (!(j == 0 || j == student.storageSize - 1)) {
+        file << ";";
+      }
+      file << keyvalue.value;
+    }
+
+    file << "\n";
+
+    file.close();
+  }
+
+  cleanOrNot();
+}
+
+void importDatabaseFromFile(Storage &storage) {
+  ifstream file(getFileName("input.txt"));
+
+  if (!file.is_open()) {
+    cout << "Нет такого файла либо каталога" << endl;
+    return;
+  }
+
+  char line[stringLength * 13] = "";
+  char delim[] = ";";
+
+  Storage newStorage = initStorage();
+
+  while (file.getline(line, stringLength * 13)) {
+    char *ptr = strtok(line, delim);
+    Student student = initStudent();
+
+    if (strlen(line) == 0) {
+      continue;
+    }
+
+    for (int i = Fuild::ID; i <= Fuild::Mark3; i++) {
+      KeyValue keyvalue;
+      keyvalue.key = (Fuild)i;
+      if (NULL != ptr) {
+        strcpy(keyvalue.value, ptr);
+        appendStudentFuild(student, keyvalue);
+        ptr = strtok(NULL, delim);
+      }
+    }
+
+    appendStudent(newStorage, student);
+  }
+
+  storage = newStorage;
+  cout << "Успешно" << endl;
+  cleanOrNot();
+}
+
